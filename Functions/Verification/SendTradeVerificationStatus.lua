@@ -6,5 +6,10 @@ function FreshSoD_SendTradeVerificationStatus(isVerified, playerName)
   end
 
   local message = isVerified and 'TV:1' or 'TV:0'
-    C_ChatInfo.SendAddonMessage(ADDON_PREFIX, message, 'WHISPER', playerName)
+  local guildName = FreshSoD_GetPlayerGuildName()
+  if guildName then
+    message = message .. ':G:' .. guildName
+  end
+
+  C_ChatInfo.SendAddonMessage(ADDON_PREFIX, message, 'WHISPER', playerName)
 end

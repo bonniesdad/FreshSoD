@@ -14,9 +14,13 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
     return
   end
 
-  local isVerified = FreshSoD_ParseTradeVerificationMessage(message)
+  local isVerified, senderGuild = FreshSoD_ParseTradeVerificationMessage(message)
   if isVerified == nil then
     return
+  end
+
+  if isVerified then
+    FreshSoD_SetAllowedPartnerGuildMemberStatus(senderGuild, sender, true)
   end
 
   FreshSoD_OnTradeVerificationMessageReceived(sender, isVerified)

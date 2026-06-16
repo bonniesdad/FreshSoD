@@ -8,6 +8,10 @@
 
 FreshSoD.lua
 
+## Comms
+Comms/ChannelConnection/Index.lua
+Comms/Index.lua
+
 ## Libs
 Libs/LibStub/LibStub.lua
 Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
@@ -57,7 +61,10 @@ Functions/Verification/HandleGuildResetAddonMessage.lua
 Functions/Verification/TradeVerificationOverlay.lua
 Functions/Verification/TradeVerificationSession.lua
 Functions/Verification/AmIVerified.lua
+Functions/Verification/AllowedPartnerGuilds.lua
+Functions/Verification/IsStoredPlayerValid.lua
 Functions/Verification/BroadcastGuildVerificationStatus.lua
+Functions/Verification/HandleCommsGuildVerification.lua
 Functions/Verification/CanPerformTradeWithPlayer.lua
 Functions/Verification/SendTamperingHistory.lua
 

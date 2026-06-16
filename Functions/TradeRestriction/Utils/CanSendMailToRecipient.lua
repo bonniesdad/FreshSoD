@@ -3,10 +3,6 @@ function FreshSoD_CanSendMailToRecipient(recipient)
     return true
   end
 
-  if not IsInGuild() then
-    return false, 'Cannot send mail - you are not in a guild.'
-  end
-
   local shortRecipient = Ambiguate(recipient, 'short')
   local playerShortName = Ambiguate(UnitName('player'), 'short')
 
@@ -15,6 +11,14 @@ function FreshSoD_CanSendMailToRecipient(recipient)
       return true
     end
     return false, 'Cannot send mail - you are not verified.'
+  end
+
+  if FreshSoD_IsStoredPlayerValid(recipient) then
+    return true
+  end
+
+  if not IsInGuild() then
+    return false, 'Cannot send mail - you are not in a guild.'
   end
 
   if not FreshSoD_IsPlayerInGuildRoster(recipient) then

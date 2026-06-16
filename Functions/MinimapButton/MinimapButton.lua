@@ -4,7 +4,7 @@ function FreshSoD_MinimapButton_Initialize()
     local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('FreshSoD', {
         type = 'data source',
         text = 'SoD Guild Found',
-        icon = TEXTURE_PATH .. '\\bonnie-round.png',
+        icon = TEXTURE_PATH .. '\\sod-guild-found-icon.png',
         OnClick = function(self, btn)
         if btn == 'LeftButton' then
             FreshSoD_ToggleFreshSoDSettings()

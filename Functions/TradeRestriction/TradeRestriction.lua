@@ -46,6 +46,12 @@ local function runNonGuildTradeCheck()
   if type(BonniesUtilities_TradeViolatesNonGuildRestrictions) ~= 'function' then
     return
   end
+
+  local partnerName = GetUnitName('npc', true)
+  if FreshSoD_IsTrustedTradePartner(partnerName) then
+    return
+  end
+
   if BonniesUtilities_TradeViolatesNonGuildRestrictions() then
     cancelNonGuildTrade()
   end
