@@ -1,4 +1,6 @@
-function FreshSoD_GetNonGuildMailIndices()
+local cachedIndices = nil
+
+local function computeNonGuildMailIndices()
   FreshSoD_RefreshGuildRoster()
 
   local indices = {}
@@ -14,6 +16,27 @@ function FreshSoD_GetNonGuildMailIndices()
   return indices
 end
 
+function FreshSoD_GetNonGuildMailIndices()
+  if not cachedIndices then
+    cachedIndices = computeNonGuildMailIndices()
+  end
+
+  return cachedIndices
+end
+
+function FreshSoD_InvalidateNonGuildMailCache()
+  cachedIndices = nil
+end
+
 function FreshSoD_HasNonGuildMail()
   return #FreshSoD_GetNonGuildMailIndices() > 0
 end
+
+local mailScanCacheFrame = CreateFrame('Frame')
+mailScanCacheFrame:RegisterEvent('MAIL_SHOW')
+mailScanCacheFrame:RegisterEvent('MAIL_INBOX_UPDATE')
+mailScanCacheFrame:RegisterEvent('MAIL_CLOSED')
+mailScanCacheFrame:RegisterEvent('GUILD_ROSTER_UPDATE')
+mailScanCacheFrame:SetScript('OnEvent', function()
+  cachedIndices = nil
+end)

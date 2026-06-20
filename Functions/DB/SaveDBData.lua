@@ -5,11 +5,15 @@ function FreshSoD_SaveDBData(key, value)
     FRESH_SOD_DB = {}
   end
 
-  if not FRESH_SOD_DB[characterGUID] then
-    FRESH_SOD_DB[characterGUID] = {}
+  if not FRESH_SOD_DB.characterSettings then
+    FRESH_SOD_DB.characterSettings = {}
   end
 
-  FRESH_SOD_DB[characterGUID][key] = value
+  if not FRESH_SOD_DB.characterSettings[characterGUID] then
+    FRESH_SOD_DB.characterSettings[characterGUID] = {}
+  end
+
+  FRESH_SOD_DB.characterSettings[characterGUID][key] = value
 
   if FRESH_SOD_GLOBAL_SETTINGS then
     FRESH_SOD_GLOBAL_SETTINGS[key] = value

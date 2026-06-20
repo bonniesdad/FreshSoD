@@ -67,13 +67,35 @@ function FreshSoD_TryResolveTradeVerification(isTimeout)
     return
   end
 
-  session.resolved = true
-
   local partnerPasses = FreshSoD_PassesLiveTradeVerification(
     session.partnerVerified,
     session.partnerGuildName,
     session.targetName
   )
+
+  -- Partner says they're verified and swears blind they're in our guild, but the
+  -- roster hasnt loaded so we cant actually prove it yet. Rather than slamming the
+  -- door on a real guildie just because Blizzard is being slow, we wait it out
+  -- (GUILD_ROSTER_UPDATE or the timeout will swing back around and call us again).
+  -- We ONLY stall for people claiming OUR guild, so randoms still get booted right
+  -- away, and the 5s timeout is the hard backstop so nobody gets to hide in here.
+  local myGuildName = FreshSoD_GetPlayerGuildName()
+  local partnerClaimsMyGuild = myGuildName
+    and session.partnerGuildName
+    and string.lower(myGuildName) == string.lower(session.partnerGuildName)
+
+  if not isTimeout
+    and session.partnerVerified == true
+    and not partnerPasses
+    and partnerClaimsMyGuild
+    and type(FreshSoD_IsGuildRosterReady) == 'function'
+    and not FreshSoD_IsGuildRosterReady() then
+    FreshSoD_RefreshGuildRoster()
+    return
+  end
+
+  session.resolved = true
+
   local canTrade = FreshSoD_AmIEligibleForWhitelistedTrade() and partnerPasses
   local message
   if not canTrade then

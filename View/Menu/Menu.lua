@@ -1,4 +1,4 @@
--- Settings frame and toggle - same patterns as UltraHardcore
+-- Settings frame and the toggle. Nicked the same patterns off UltraHardcore, no point reinventing the wheel big shoutout too the goat Bonniesdad.
 local ADDON_NAME = 'FreshSoD'
 local TEXTURE_PATH = 'Interface\\AddOns\\FreshSoD\\Textures'
 

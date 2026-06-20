@@ -3,5 +3,9 @@ function FreshSoD_SendTamperingHistory(playerName)
     return
   end
 
+  if type(BonniesUtilities_WhisperNaughtyLog) ~= 'function' then
+    return
+  end
+
   BonniesUtilities_WhisperNaughtyLog(playerName)
 end

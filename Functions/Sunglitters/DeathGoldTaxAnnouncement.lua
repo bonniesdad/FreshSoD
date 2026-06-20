@@ -1,3 +1,5 @@
+local addonName = ...
+
 local announcementFrame
 local announcementQueue = {}
 local isShowingAnnouncement = false

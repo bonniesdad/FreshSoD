@@ -1,6 +1,9 @@
 local sendGuardInstalled = false
 local canSendHookInstalled = false
 
+local RECIPIENT_REQUEST_THROTTLE_SECONDS = 5
+local lastRecipientRequest = {}
+
 local function hookSendMailFrame()
   if not SendMailFrame or SendMailFrame.freshSoDSendMailHooked then
     return
@@ -22,12 +25,40 @@ local function getRecipient()
   return nil
 end
 
-local function updateSendMailButtonState()
-  if type(SendMailFrame_CanSend) == 'function' then
-    SendMailFrame_CanSend()
+-- We have not received this guildies verification status yet.
+-- That means the send check is stuck with "I dunno" and cannot continue.
+-- Request their status now so the next attempt can succeed instead of telling people to /reload and pray.
+local function requestRecipientVerificationIfNeeded(recipient)
+  if not recipient or recipient == '' or not IsInGuild() then
     return
   end
 
+  if not FreshSoD_IsPlayerInGuildRoster(recipient) then
+    return
+  end
+
+  local guildName = FreshSoD_GetPlayerGuildName()
+  if not guildName then
+    return
+  end
+
+  if FreshSoD_GetGuildMemberVerificationStatus(guildName, recipient) ~= nil then
+    return
+  end
+
+  local key = string.lower(Ambiguate(recipient, 'short'))
+  local now = (GetTime and GetTime()) or 0
+  if lastRecipientRequest[key] and (now - lastRecipientRequest[key]) < RECIPIENT_REQUEST_THROTTLE_SECONDS then
+    return
+  end
+  lastRecipientRequest[key] = now
+
+  if FreshSoD_RequestGuildVerificationFromPlayer then
+    FreshSoD_RequestGuildVerificationFromPlayer(recipient)
+  end
+end
+
+local function evaluateRecipientAndMaybeBlock()
   if not SendMailMailButton or not SendMailMailButton:IsEnabled() then
     return
   end
@@ -37,10 +68,21 @@ local function updateSendMailButtonState()
     return
   end
 
+  requestRecipientVerificationIfNeeded(recipient)
+
   local allowed = FreshSoD_CanSendMailToRecipient(recipient)
   if not allowed then
     SendMailMailButton:Disable()
   end
+end
+
+local function updateSendMailButtonState()
+  if type(SendMailFrame_CanSend) == 'function' then
+    SendMailFrame_CanSend()
+    return
+  end
+
+  evaluateRecipientAndMaybeBlock()
 end
 
 local function blockInvalidSend(recipient)
@@ -49,6 +91,7 @@ local function blockInvalidSend(recipient)
     return false
   end
 
+  requestRecipientVerificationIfNeeded(recipient)
   FreshSoD_PrintRestrictionMessage(reason)
   if SendMailMailButton then
     SendMailMailButton:Enable()
@@ -61,21 +104,7 @@ local function installCanSendHook()
     return
   end
 
-  hooksecurefunc('SendMailFrame_CanSend', function()
-    if not SendMailMailButton or not SendMailMailButton:IsEnabled() then
-      return
-    end
-
-    local recipient = getRecipient()
-    if not recipient or recipient == '' then
-      return
-    end
-
-    local allowed = FreshSoD_CanSendMailToRecipient(recipient)
-    if not allowed then
-      SendMailMailButton:Disable()
-    end
-  end)
+  hooksecurefunc('SendMailFrame_CanSend', evaluateRecipientAndMaybeBlock)
 
   canSendHookInstalled = true
 end
@@ -112,8 +141,9 @@ mailSendRestrictionFrame:RegisterEvent('MAIL_SHOW')
 mailSendRestrictionFrame:RegisterEvent('MAIL_CLOSED')
 mailSendRestrictionFrame:RegisterEvent('MAIL_SEND_INFO_UPDATE')
 mailSendRestrictionFrame:RegisterEvent('GUILD_ROSTER_UPDATE')
+mailSendRestrictionFrame:RegisterEvent('CHAT_MSG_ADDON')
 
-mailSendRestrictionFrame:SetScript('OnEvent', function(_, event)
+mailSendRestrictionFrame:SetScript('OnEvent', function(_, event, ...)
   if event == 'PLAYER_LOGIN' or event == 'MAIL_SHOW' then
     hookSendMailFrame()
     installSendGuard()
@@ -123,6 +153,16 @@ mailSendRestrictionFrame:SetScript('OnEvent', function(_, event)
 
   if event == 'MAIL_CLOSED' then
     FreshSoD_HideSendMailRestrictionOverlay()
+    return
+  end
+
+  if event == 'CHAT_MSG_ADDON' then
+    -- We might have received the recipient's verification status by now check again and enable the Send button if we finally have enough information to make a decision.
+
+    local prefix = ...
+    if prefix == 'FreshSoD' and SendMailFrame and SendMailFrame:IsShown() then
+      updateSendMailButtonState()
+    end
     return
   end
 

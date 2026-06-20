@@ -1,4 +1,3 @@
-addonName = ...
 FreshSoD = CreateFrame('Frame')
 
 FreshSoD:RegisterEvent('PLAYER_LOGIN')

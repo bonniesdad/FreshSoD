@@ -10,7 +10,7 @@ function FreshSoD_CanSendMailToRecipient(recipient)
   local shortRecipient = Ambiguate(recipient, 'short')
   local playerShortName = Ambiguate(UnitName('player'), 'short')
 
-  if shortRecipient == playerShortName then
+  if string.lower(shortRecipient) == string.lower(playerShortName) then
     if FreshSoD_AmIVerified() then
       return true
     end

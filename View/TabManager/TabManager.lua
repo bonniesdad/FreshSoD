@@ -1,4 +1,4 @@
--- Use FreshSoD_* globals only so we never overwrite UltraHardcore's TabManager* when both addons load
+-- Stick to FreshSoD_* globals only so we dont stomp all over UltraHardcore's TabManager* when both addons are loaded together
 local TabManager = {}
 local TAB_WIDTH = 146
 local TAB_HEIGHT = 32

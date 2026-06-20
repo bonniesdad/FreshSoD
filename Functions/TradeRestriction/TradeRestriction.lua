@@ -3,6 +3,7 @@ local nonGuildTradeCheckScheduled = false
 local guildTradeVerificationTimer = nil
 local guildTradeVerificationRetryTimer = nil
 local tradeSessionGeneration = 0
+local tradeWindowOpen = false
 
 local TRADE_CONTENT_EVENTS = {
   'TRADE_SHOW',
@@ -25,6 +26,7 @@ end
 
 frame:RegisterEvent('TRADE_CLOSED')
 frame:RegisterEvent('AUCTION_HOUSE_SHOW')
+frame:RegisterEvent('GUILD_ROSTER_UPDATE')
 
 local function cancelNonGuildTrade()
   local partnerName = GetUnitName('npc', true)
@@ -141,9 +143,20 @@ end
 
 frame:SetScript('OnEvent', function(self, event, ...)
   if event == 'TRADE_SHOW' then
+    tradeWindowOpen = true
     tradeSessionGeneration = tradeSessionGeneration + 1
     FreshSoD_ResetGuildTradeVerification()
     scheduleNonGuildTradeCheck()
+  elseif event == 'GUILD_ROSTER_UPDATE' then
+    -- This trade may have opened before the guild roster was ready check it again now that we have roster data instead of leaving the trade stuck in a blocked state for the rest of the session.
+
+    if tradeWindowOpen then
+      scheduleNonGuildTradeCheck()
+      if type(FreshSoD_TryResolveTradeVerification) == 'function' then
+        FreshSoD_TryResolveTradeVerification()
+      end
+      scheduleGuildTradeVerificationCheck()
+    end
   elseif event == 'TRADE_UPDATE'
     or event == 'TRADE_ACCEPT_UPDATE'
     or event == 'TRADE_MONEY_CHANGED'
@@ -158,6 +171,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
 
     scheduleGuildTradeVerificationCheck()
   elseif event == 'TRADE_CLOSED' then
+    tradeWindowOpen = false
     tradeSessionGeneration = tradeSessionGeneration + 1
     nonGuildTradeCheckScheduled = false
     cancelGuildTradeVerificationTimers()

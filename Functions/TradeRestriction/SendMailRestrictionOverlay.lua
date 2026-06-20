@@ -15,7 +15,7 @@ local TITLE_BODY_GAP = 22
 local MESSAGE_LINES = {
   'You can only send mail to your own guild members.',
   'You cannot send mail to players in a sister guilds.  You must trade with them in person.',
-  'Sending just gold to a sister guild member will result in the gold being deleted.',
+  'Sending just gold to a sister guild member will result in the gold being returned to the sender.',
   'Sending items to a sister guild member will result in the items being returned.',
   'Be careful!',
 }

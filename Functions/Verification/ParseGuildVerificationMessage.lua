@@ -13,3 +13,12 @@ function FreshSoD_ParseGuildVerificationMessage(message)
 
   return nil
 end
+
+-- GVR:1 is just someone going "oi, tell me your status again" kept seperate from the GV: parser above so the two never step on each others toes.
+function FreshSoD_ParseGuildVerificationRequest(message)
+  if not message then
+    return false
+  end
+
+  return message:match('^GVR:1$') ~= nil
+end

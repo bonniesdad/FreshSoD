@@ -1,5 +1,21 @@
 # Patch Notes
 
+## 1.1.2 (2026-06-20)
+
+Pushed by Fjella
+
+**BUG FIXES:**
+• Trades and mail with guild members no longer require a /reload or relog after logging in
+• Fixed mail to guild members getting blocked with "verification status unknown" until both players reloaded
+• Verification status now syncs between guild members on login instead of sometimes being missed until a reload
+• Opening your mailbox right after login no longer risks flagging guild members' mail for return
+• Fixed some settings (death tax owed, level bracket acknowledgements) occasionally not saving
+
+**OTHER:**
+• Reworked guild roster handling to be event-driven and cached — this is the root-cause fix behind the trade/mail reload issues
+• Added safety guards so a missing or updated BonniesUtilities degrades gracefully instead of throwing errors
+• Minor wording fixes on mail messages
+
 ## 1.1.1 (2026-06-19)
 
 **HOTFIX:**
