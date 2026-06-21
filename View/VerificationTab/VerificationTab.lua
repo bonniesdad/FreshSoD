@@ -163,6 +163,9 @@ local function updateVerificationTabDisplay(content)
       end
     end
   end
+
+  FreshSoD_UpdateVerificationTabTamperingHistory(content, blockEnd)
+  FreshSoD_EnsureVerificationTabWhisperInput(content)
 end
 
 function FreshSoD_InitializeVerificationTab(tabContents)
@@ -173,5 +176,6 @@ function FreshSoD_InitializeVerificationTab(tabContents)
 
   ensureVerificationTabLayout(content)
   FreshSoD_EnsureVerificationTabWhisperInput(content)
+  FreshSoD_EnsureVerificationTabTamperingHistory(content)
   updateVerificationTabDisplay(content)
 end

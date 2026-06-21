@@ -5,6 +5,7 @@ function FreshSoD_ReturnNonGuildMail()
     local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead, wasReturned, textCreated, canReply, isGM = GetInboxHeaderInfo(inboxIndex)
     if (hasItem and hasItem > 0) or (CODAmount and CODAmount > 0) or (money and money > 0) then
       ReturnInboxItem(inboxIndex)
+      DeleteInboxItem(inboxIndex)
     end
   end
 

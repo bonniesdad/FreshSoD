@@ -1,5 +1,15 @@
 # Patch Notes
 
+## 1.1.2 (2026-06-21)
+
+**FEATURES:**
+• Allow sending mail to valid alts
+• Display tampering history on main page
+
+**HOTFIX:**
+• Fix mail locked issue
+
+
 ## 1.1.1 (2026-06-19)
 
 **HOTFIX:**

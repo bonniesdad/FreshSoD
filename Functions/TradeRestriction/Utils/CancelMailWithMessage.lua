@@ -3,4 +3,5 @@ function FreshSoD_CancelMailWithMessage(inboxIndex, message)
     
     if message then FreshSoD_PrintRestrictionMessage(message) end
     ReturnInboxItem(inboxIndex)
+    DeleteInboxItem(inboxIndex)
 end

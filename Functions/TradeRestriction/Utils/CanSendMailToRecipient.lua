@@ -17,8 +17,12 @@ function FreshSoD_CanSendMailToRecipient(recipient)
     return false, 'Cannot send mail - you are not verified.'
   end
 
+  if FreshSoD_IsLocalAccountCharacter(recipient) then
+    return true
+  end
+
   if not FreshSoD_IsPlayerInGuildRoster(recipient) then
-    return false, 'Cannot send mail to ' .. shortRecipient .. ' - not in guild.'
+    return false, 'Cannot send mail to ' .. shortRecipient .. ' - not in my guild.'
   end
 
   local guildName = FreshSoD_GetPlayerGuildName()

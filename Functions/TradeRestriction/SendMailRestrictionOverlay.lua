@@ -13,11 +13,9 @@ local TITLE_TEXT = 'Sending mail in guild found'
 local TITLE_COLOR = { 1, 1, 0 }
 local TITLE_BODY_GAP = 22
 local MESSAGE_LINES = {
-  'You can only send mail to your own guild members.',
-  'You cannot send mail to players in a sister guilds.  You must trade with them in person.',
-  'Sending just gold to a sister guild member will result in the gold being deleted.',
-  'Sending items to a sister guild member will result in the items being returned.',
-  'Be careful!',
+  'You can send mail to your own valid guild members.',
+  'You can send mail to valid alts.',
+  'You cannot send mail to players in a sister guilds yet.',
 }
 
 local function getBulletText()

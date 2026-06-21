@@ -39,13 +39,16 @@ local function ensureWhisperInputLayout(content)
   content.whisperHelperLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
   content.whisperHelperLabel:SetText(HELPER_TEXT)
   content.whisperHelperLabel:SetTextColor(0.85, 0.85, 0.85)
+  content.whisperHelperLabel:SetDrawLayer('OVERLAY', 2)
 
   content.whisperPlayerInput = CreateFrame('EditBox', nil, content, 'InputBoxTemplate')
   content.whisperPlayerInput:SetAutoFocus(false)
   content.whisperPlayerInput:SetMaxLetters(50)
+  content.whisperPlayerInput:SetFrameLevel(content:GetFrameLevel() + 10)
 
   content.whisperSendButton = CreateFrame('Button', nil, content, 'UIPanelButtonTemplate')
   content.whisperSendButton:SetText('Send')
+  content.whisperSendButton:SetFrameLevel(content:GetFrameLevel() + 10)
   content.whisperSendButton:SetScript('OnClick', function()
     local playerName = content.whisperPlayerInput:GetText()
     if playerName then
