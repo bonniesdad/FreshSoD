@@ -53,12 +53,5 @@ function FreshSoD_GetLocalCharacterVerificationStatus(playerName, guildName)
 end
 
 function FreshSoD_IsLocalAccountCharacter(playerName)
-  FreshSoD_EnsureLocalCharacterVerificationDB()
-
-  local shortName = normalizeCharacterName(playerName)
-  if not shortName then
-    return false
-  end
-
-  return FRESH_SOD_DB.localCharacterVerification[shortName] ~= nil
+  return FreshSoD_GetLocalCharacterVerificationStatus(playerName) == true
 end

@@ -4,7 +4,7 @@ local BUTTON_WIDTH = 110
 local BUTTON_HEIGHT = 24
 local BUTTON_BOTTOM_MARGIN = 20
 local BUTTON_GAP = 12
-local MESSAGE_TEXT = 'Mail from non-guildies must be returned before you can continue'
+local MESSAGE_TEXT = 'Mail from invalid players must be returned before you can continue'
 
 local function getRemainingMailCount()
   if type(FreshSoD_GetNonGuildMailIndices) ~= 'function' then

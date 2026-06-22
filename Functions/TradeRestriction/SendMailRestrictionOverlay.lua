@@ -4,7 +4,7 @@ local TEXT_TOP_OFFSET = TEXT_INSET + 40
 local WIDTH_OFFSET = 50
 local HEIGHT_OFFSET = 110
 local POSITION_OFFSET_X = -25
-local POSITION_OFFSET_Y = 35
+local POSITION_OFFSET_Y = 28
 local SENTENCE_GAP = '\n\n\n'
 local BUTTON_WIDTH = 110
 local BUTTON_HEIGHT = 24
@@ -13,7 +13,7 @@ local TITLE_TEXT = 'Sending mail in guild found'
 local TITLE_COLOR = { 1, 1, 0 }
 local TITLE_BODY_GAP = 22
 local MESSAGE_LINES = {
-  'You can send mail to your own valid guild members.',
+  'You can send mail to your own valid guild members.\nAsk "unknown" guild members to relog to automatically send their verification status.',
   'You can send mail to valid alts.',
   'You cannot send mail to players in a sister guilds yet.',
 }

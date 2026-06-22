@@ -17,12 +17,17 @@ function FreshSoD_CanSendMailToRecipient(recipient)
     return false, 'Cannot send mail - you are not verified.'
   end
 
-  if FreshSoD_IsLocalAccountCharacter(recipient) then
+  local localStatus = FreshSoD_GetLocalCharacterVerificationStatus(recipient)
+  if localStatus == true then
     return true
   end
 
+  if localStatus ~= nil then
+    return false, 'Cannot send mail to ' .. shortRecipient .. ' - alt account has invalid status.'
+  end
+
   if not FreshSoD_IsPlayerInGuildRoster(recipient) then
-    return false, 'Cannot send mail to ' .. shortRecipient .. ' - not in my guild.'
+    return false, 'Cannot send mail to ' .. shortRecipient .. ' - not in my guild (cannot sent to sister guilds yet, please trade in person).'
   end
 
   local guildName = FreshSoD_GetPlayerGuildName()
@@ -40,5 +45,5 @@ function FreshSoD_CanSendMailToRecipient(recipient)
     return false, 'Cannot send mail to ' .. shortRecipient .. ' - not verified.'
   end
 
-  return false, 'Cannot send mail to ' .. shortRecipient .. ' - verification status unknown.'
+  return false, 'Cannot send mail to ' .. shortRecipient .. ' - verification status unknown (ask them to relog to automatically send their verification status).'
 end

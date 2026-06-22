@@ -10,6 +10,6 @@ function FreshSoD_ReturnNonGuildMail()
   end
 
   if #indices > 0 then
-    FreshSoD_PrintRestrictionMessage('Removed mail from non-guild senders.')
+    FreshSoD_PrintRestrictionMessage('Removed mail from non valid guild senders.')
   end
 end
