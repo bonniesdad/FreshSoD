@@ -31,6 +31,15 @@ local function hasRestrictedMail()
   return next(restrictedIndexSet) ~= nil
 end
 
+function FreshSoD_ShouldBlockOpenAllMail()
+  if type(FreshSoD_IsMailInboxScanPending) == 'function' and FreshSoD_IsMailInboxScanPending() then
+    return true
+  end
+
+  buildRestrictedIndexSet()
+  return hasRestrictedMail()
+end
+
 local function getMailRowFrame(slotIndex)
   return _G['MailItem' .. slotIndex]
 end
@@ -138,19 +147,24 @@ local function createOpenAllBlocker()
   blocker.label:SetTextColor(1, 0.82, 0)
   blocker.label:SetText(OPEN_ALL_BLOCKER_TEXT)
 
-  blocker:SetScript('OnEnter', function()
-    local remaining = getRestrictedMailCount()
-    local noun = remaining == 1 and 'mail' or 'mails'
+    blocker:SetScript('OnEnter', function()
+      local scanPending = type(FreshSoD_IsMailInboxScanPending) == 'function' and FreshSoD_IsMailInboxScanPending()
+      local remaining = getRestrictedMailCount()
+      local noun = remaining == 1 and 'mail' or 'mails'
 
-    GameTooltip:SetOwner(blocker, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Open All disabled', 1, 0.82, 0)
-    GameTooltip:AddLine('Return or delete restricted ' .. noun .. ' above first.', 1, 1, 1, true)
-    if remaining > 0 then
-      GameTooltip:AddLine(' ')
-      GameTooltip:AddLine('Remaining: ' .. remaining, 0.75, 0.75, 0.75)
-    end
-    GameTooltip:Show()
-  end)
+      GameTooltip:SetOwner(blocker, 'ANCHOR_RIGHT')
+      GameTooltip:SetText('Open All disabled', 1, 0.82, 0)
+      if scanPending then
+        GameTooltip:AddLine('Checking inbox for restricted mail.', 1, 1, 1, true)
+      else
+        GameTooltip:AddLine('Return or delete restricted ' .. noun .. ' above first.', 1, 1, 1, true)
+      end
+      if remaining > 0 then
+        GameTooltip:AddLine(' ')
+        GameTooltip:AddLine('Remaining: ' .. remaining, 0.75, 0.75, 0.75)
+      end
+      GameTooltip:Show()
+    end)
   blocker:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
@@ -158,26 +172,50 @@ local function createOpenAllBlocker()
   return blocker
 end
 
+function FreshSoD_EnsureMailOpenAllBlocker()
+  if OpenAllMail and not openAllBlocker then
+    openAllBlocker = createOpenAllBlocker()
+    openAllBlocker:Hide()
+  end
+end
+
+function FreshSoD_PreemptivelyBlockOpenAllMail()
+  FreshSoD_EnsureMailOpenAllBlocker()
+
+  if OpenAllMail then
+    OpenAllMail:Disable()
+  end
+
+  if openAllBlocker then
+    openAllBlocker:Show()
+  end
+end
+
 local function updateOpenAllBlocker()
   if not OpenAllMail then
     return
   end
 
-  if hasRestrictedMail() then
-    if not openAllBlocker then
-      openAllBlocker = createOpenAllBlocker()
-    end
+  FreshSoD_EnsureMailOpenAllBlocker()
 
+  if FreshSoD_ShouldBlockOpenAllMail() then
     OpenAllMail:Disable()
     openAllBlocker:Show()
     return
   end
 
-  if openAllBlocker then
-    openAllBlocker:Hide()
-  end
-
+  openAllBlocker:Hide()
   OpenAllMail:Enable()
+end
+
+local function hideRowOverlays()
+  for slotIndex = 1, NUM_MAIL_ROWS do
+    local overlay = rowOverlays[slotIndex]
+    if overlay then
+      overlay.inboxIndex = nil
+      overlay:Hide()
+    end
+  end
 end
 
 local function updateRowOverlays()
@@ -198,13 +236,8 @@ local function updateRowOverlays()
 end
 
 function FreshSoD_HideMailRestrictionOverlay()
-  for slotIndex = 1, NUM_MAIL_ROWS do
-    local overlay = rowOverlays[slotIndex]
-    if overlay then
-      overlay.inboxIndex = nil
-      overlay:Hide()
-    end
-  end
+  hideRowOverlays()
+  wipe(restrictedIndexSet)
 
   if openAllBlocker then
     openAllBlocker:Hide()
@@ -213,23 +246,31 @@ function FreshSoD_HideMailRestrictionOverlay()
   if OpenAllMail then
     OpenAllMail:Enable()
   end
-
-  wipe(restrictedIndexSet)
 end
 
 function FreshSoD_UpdateMailRestrictionOverlay()
-  if not MailFrame or not MailFrame:IsShown() or not InboxFrame or not InboxFrame:IsShown() then
+  if not MailFrame or not MailFrame:IsShown() then
+    if type(FreshSoD_IsMailInboxScanPending) == 'function' and FreshSoD_IsMailInboxScanPending() then
+      FreshSoD_PreemptivelyBlockOpenAllMail()
+      return
+    end
+
     FreshSoD_HideMailRestrictionOverlay()
     return
   end
 
   buildRestrictedIndexSet()
+  updateOpenAllBlocker()
+
+  if not InboxFrame or not InboxFrame:IsShown() then
+    hideRowOverlays()
+    return
+  end
 
   if not hasRestrictedMail() then
-    FreshSoD_HideMailRestrictionOverlay()
+    hideRowOverlays()
     return
   end
 
   updateRowOverlays()
-  updateOpenAllBlocker()
 end
