@@ -1,4 +1,7 @@
-local DEATH_TAX_GUILD = 'shockstate'
+local DEATH_TAX_GUILDS = {
+  shockstate = true,
+  shockstated = true,
+}
 
 function FreshSoD_IsDeathTaxGuild()
   local guildName = FreshSoD_GetPlayerGuildName()
@@ -6,5 +9,5 @@ function FreshSoD_IsDeathTaxGuild()
     return false
   end
 
-  return string.lower(guildName) == DEATH_TAX_GUILD
+  return DEATH_TAX_GUILDS[string.lower(guildName)] == true
 end
