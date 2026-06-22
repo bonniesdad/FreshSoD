@@ -1,12 +1,26 @@
+function FreshSoD_ReturnNonGuildMailAtIndex(inboxIndex, printMessage)
+  if not inboxIndex then
+    return
+  end
+
+  local message = printMessage ~= false and 'Returned mail from invalid sender.' or nil
+  FreshSoD_CancelMailWithMessage(inboxIndex, message)
+end
+
+function FreshSoD_DeleteNonGuildMailAtIndex(inboxIndex)
+  if not inboxIndex then
+    return
+  end
+
+  DeleteInboxItem(inboxIndex)
+  FreshSoD_PrintRestrictionMessage('Deleted mail from invalid sender.')
+end
+
 function FreshSoD_ReturnNonGuildMail()
   local indices = FreshSoD_GetNonGuildMailIndices()
 
   for _, inboxIndex in ipairs(indices) do
-    local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead, wasReturned, textCreated, canReply, isGM = GetInboxHeaderInfo(inboxIndex)
-    if (hasItem and hasItem > 0) or (CODAmount and CODAmount > 0) or (money and money > 0) then
-      ReturnInboxItem(inboxIndex)
-      DeleteInboxItem(inboxIndex)
-    end
+    FreshSoD_ReturnNonGuildMailAtIndex(inboxIndex, false)
   end
 
   if #indices > 0 then

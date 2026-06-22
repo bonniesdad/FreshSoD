@@ -22,6 +22,13 @@ local function scheduleMailRestrictionUpdate()
   end)
 end
 
+local function hookInboxFrameUpdate()
+  if InboxFrame_Update and not _G.FreshSoDInboxFrameUpdateHooked then
+    _G.FreshSoDInboxFrameUpdateHooked = true
+    hooksecurefunc('InboxFrame_Update', FreshSoD_UpdateMailRestrictionOverlay)
+  end
+end
+
 local function hookMailFrame()
   if not MailFrame or MailFrame.freshSoDMailHooked then
     return
@@ -29,6 +36,7 @@ local function hookMailFrame()
 
   MailFrame.freshSoDMailHooked = true
   MailFrame:HookScript('OnShow', scheduleMailRestrictionUpdate)
+  hookInboxFrameUpdate()
 end
 
 mailRestrictionFrame:RegisterEvent('PLAYER_LOGIN')
@@ -58,3 +66,4 @@ mailRestrictionFrame:SetScript('OnEvent', function(_, event)
 end)
 
 hookMailFrame()
+hookInboxFrameUpdate()

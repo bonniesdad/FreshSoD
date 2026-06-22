@@ -1,103 +1,235 @@
-local overlay
-local OVERLAY_PADDING = 12
-local BUTTON_WIDTH = 110
-local BUTTON_HEIGHT = 24
-local BUTTON_BOTTOM_MARGIN = 20
-local BUTTON_GAP = 12
-local MESSAGE_TEXT = 'Mail from invalid players must be returned before you can continue'
+local NUM_MAIL_ROWS = INBOXITEMS_TO_DISPLAY or 7
+local ROW_MESSAGE = 'Invalid sender'
+local OPEN_ALL_BLOCKER_TEXT = 'Blocked'
+local OPEN_ALL_BLOCKER_PADDING_X = 4
+local BUTTON_WIDTH = 64
+local BUTTON_HEIGHT = 18
+local BUTTON_GAP = 4
+local MESSAGE_INSET = 8
+local TEXT_BLOCK_CENTER_OFFSET = -7
+local SENDER_MESSAGE_GAP = 2
 
-local function getRemainingMailCount()
+local rowOverlays = {}
+local openAllBlocker
+local restrictedIndexSet = {}
+
+local function buildRestrictedIndexSet()
+  wipe(restrictedIndexSet)
+
   if type(FreshSoD_GetNonGuildMailIndices) ~= 'function' then
-    return 0
+    return restrictedIndexSet
   end
 
-  return #FreshSoD_GetNonGuildMailIndices()
-end
-
-local function getOverlayMessage()
-  local remaining = getRemainingMailCount()
-  local noun = remaining == 1 and 'mail' or 'mails'
-  return MESSAGE_TEXT .. '\n\nRemaining to return: ' .. remaining .. ' ' .. noun
-end
-
-local function closeMailbox()
-  if CloseMail then
-    CloseMail()
-  elseif MailFrame then
-    MailFrame:Hide()
+  for _, inboxIndex in ipairs(FreshSoD_GetNonGuildMailIndices()) do
+    restrictedIndexSet[inboxIndex] = true
   end
+
+  return restrictedIndexSet
 end
 
-function FreshSoD_ShowMailRestrictionOverlay()
-  if not MailFrame then
+local function hasRestrictedMail()
+  return next(restrictedIndexSet) ~= nil
+end
+
+local function getMailRowFrame(slotIndex)
+  return _G['MailItem' .. slotIndex]
+end
+
+local function getMailRowButton(slotIndex)
+  return _G['MailItem' .. slotIndex .. 'Button']
+end
+
+local function createRowOverlay(slotIndex)
+  local mailRow = getMailRowFrame(slotIndex)
+  if not mailRow then
+    return nil
+  end
+
+  local overlay = CreateFrame('Frame', 'FreshSoDMailRestrictionRowOverlay' .. slotIndex, mailRow, 'BackdropTemplate')
+  overlay:SetAllPoints(mailRow)
+  overlay:SetFrameStrata('HIGH')
+  overlay:SetFrameLevel(mailRow:GetFrameLevel() + 20)
+  overlay:EnableMouse(true)
+  overlay:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8x8',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 },
+  })
+  overlay:SetBackdropColor(0, 0, 0, 0.9)
+  overlay:SetBackdropBorderColor(0.6, 0.1, 0.1, 1)
+
+  overlay.returnButton = CreateFrame('Button', nil, overlay, 'UIPanelButtonTemplate')
+  overlay.returnButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+  overlay.returnButton:SetText('Return')
+  overlay.returnButton:SetScript('OnClick', function()
+    if overlay.inboxIndex then
+      FreshSoD_ReturnNonGuildMailAtIndex(overlay.inboxIndex)
+    end
+  end)
+
+  overlay.deleteButton = CreateFrame('Button', nil, overlay, 'UIPanelButtonTemplate')
+  overlay.deleteButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+  overlay.deleteButton:SetText('Delete')
+  overlay.deleteButton:SetScript('OnClick', function()
+    if overlay.inboxIndex then
+      FreshSoD_DeleteNonGuildMailAtIndex(overlay.inboxIndex)
+    end
+  end)
+
+  overlay.deleteButton:SetPoint('RIGHT', overlay, 'RIGHT', -MESSAGE_INSET, 0)
+  overlay.returnButton:SetPoint('RIGHT', overlay.deleteButton, 'LEFT', -BUTTON_GAP, 0)
+
+  overlay.messageText = overlay:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  overlay.messageText:SetPoint('LEFT', overlay, 'LEFT', MESSAGE_INSET, TEXT_BLOCK_CENTER_OFFSET)
+  overlay.messageText:SetPoint('RIGHT', overlay.returnButton, 'LEFT', -BUTTON_GAP, TEXT_BLOCK_CENTER_OFFSET)
+  overlay.messageText:SetJustifyH('LEFT')
+  overlay.messageText:SetText(ROW_MESSAGE)
+
+  overlay.senderText = overlay:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  overlay.senderText:SetPoint('BOTTOMLEFT', overlay.messageText, 'TOPLEFT', 0, SENDER_MESSAGE_GAP)
+  overlay.senderText:SetPoint('RIGHT', overlay.returnButton, 'LEFT', -BUTTON_GAP, 0)
+  overlay.senderText:SetJustifyH('LEFT')
+  overlay.senderText:SetTextColor(1, 1, 1)
+
+  overlay:Hide()
+  return overlay
+end
+
+local function getOrCreateRowOverlay(slotIndex)
+  if not rowOverlays[slotIndex] then
+    rowOverlays[slotIndex] = createRowOverlay(slotIndex)
+  end
+
+  return rowOverlays[slotIndex]
+end
+
+local function getRestrictedMailCount()
+  local count = 0
+  for _ in pairs(restrictedIndexSet) do
+    count = count + 1
+  end
+  return count
+end
+
+local function createOpenAllBlocker()
+  local blocker = CreateFrame('Frame', 'FreshSoDMailOpenAllBlocker', OpenAllMail, 'BackdropTemplate')
+  blocker:SetPoint('TOPLEFT', OpenAllMail, 'TOPLEFT', -OPEN_ALL_BLOCKER_PADDING_X, 0)
+  blocker:SetPoint('BOTTOMRIGHT', OpenAllMail, 'BOTTOMRIGHT', OPEN_ALL_BLOCKER_PADDING_X, 0)
+  blocker:SetFrameStrata('HIGH')
+  blocker:SetFrameLevel(OpenAllMail:GetFrameLevel() + 10)
+  blocker:EnableMouse(true)
+  blocker:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8x8',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = { left = 2, right = 2, top = 2, bottom = 2 },
+  })
+  blocker:SetBackdropColor(0.08, 0.02, 0.02, 0.94)
+  blocker:SetBackdropBorderColor(0.7, 0.15, 0.1, 1)
+
+  blocker.label = blocker:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  blocker.label:SetPoint('CENTER', blocker, 'CENTER', 0, 0)
+  blocker.label:SetJustifyH('CENTER')
+  blocker.label:SetTextColor(1, 0.82, 0)
+  blocker.label:SetText(OPEN_ALL_BLOCKER_TEXT)
+
+  blocker:SetScript('OnEnter', function()
+    local remaining = getRestrictedMailCount()
+    local noun = remaining == 1 and 'mail' or 'mails'
+
+    GameTooltip:SetOwner(blocker, 'ANCHOR_RIGHT')
+    GameTooltip:SetText('Open All disabled', 1, 0.82, 0)
+    GameTooltip:AddLine('Return or delete restricted ' .. noun .. ' above first.', 1, 1, 1, true)
+    if remaining > 0 then
+      GameTooltip:AddLine(' ')
+      GameTooltip:AddLine('Remaining: ' .. remaining, 0.75, 0.75, 0.75)
+    end
+    GameTooltip:Show()
+  end)
+  blocker:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+
+  return blocker
+end
+
+local function updateOpenAllBlocker()
+  if not OpenAllMail then
     return
   end
 
-  if not overlay then
-    overlay = CreateFrame('Frame', 'FreshSoDMailRestrictionOverlay', MailFrame, 'BackdropTemplate')
-    overlay:SetFrameStrata('HIGH')
-    overlay:SetFrameLevel(MailFrame:GetFrameLevel() + 20)
-    overlay:EnableMouse(true)
-    overlay:SetBackdrop({
-      bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background-Dark',
-      edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-      tile = true,
-      tileSize = 32,
-      edgeSize = 32,
-      insets = { left = 11, right = 11, top = 11, bottom = 11 },
-    })
-    overlay:SetBackdropColor(0, 0, 0, 0.95)
+  if hasRestrictedMail() then
+    if not openAllBlocker then
+      openAllBlocker = createOpenAllBlocker()
+    end
 
-    overlay.messageText = overlay:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
-    overlay.messageText:SetPoint('CENTER', 0, 16)
-    overlay.messageText:SetWidth(MailFrame:GetWidth() - 48)
-    overlay.messageText:SetWordWrap(true)
-    overlay.messageText:SetJustifyH('CENTER')
-    overlay.messageText:SetJustifyV('MIDDLE')
-    overlay.messageText:SetText(getOverlayMessage())
-
-    overlay.cancelButton = CreateFrame('Button', nil, overlay, 'UIPanelButtonTemplate')
-    overlay.cancelButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
-    overlay.cancelButton:SetText('Cancel')
-    overlay.cancelButton:SetScript('OnClick', function()
-      FreshSoD_HideMailRestrictionOverlay()
-      closeMailbox()
-    end)
-
-    overlay.returnButton = CreateFrame('Button', nil, overlay, 'UIPanelButtonTemplate')
-    overlay.returnButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
-    overlay.returnButton:SetText('Return mail')
-    overlay.returnButton:SetScript('OnClick', function()
-      FreshSoD_ReturnNonGuildMail()
-    end)
+    OpenAllMail:Disable()
+    openAllBlocker:Show()
+    return
   end
 
-  overlay.messageText:SetWidth(MailFrame:GetWidth() - 48)
-  overlay.messageText:SetText(getOverlayMessage())
+  if openAllBlocker then
+    openAllBlocker:Hide()
+  end
 
-  overlay.cancelButton:ClearAllPoints()
-  overlay.cancelButton:SetPoint('BOTTOMLEFT', overlay, 'BOTTOMLEFT', BUTTON_BOTTOM_MARGIN, BUTTON_BOTTOM_MARGIN)
+  OpenAllMail:Enable()
+end
 
-  overlay.returnButton:ClearAllPoints()
-  overlay.returnButton:SetPoint('BOTTOMRIGHT', overlay, 'BOTTOMRIGHT', -BUTTON_BOTTOM_MARGIN, BUTTON_BOTTOM_MARGIN)
+local function updateRowOverlays()
+  for slotIndex = 1, NUM_MAIL_ROWS do
+    local overlay = getOrCreateRowOverlay(slotIndex)
+    local mailButton = getMailRowButton(slotIndex)
 
-  overlay:SetSize(MailFrame:GetWidth() + (OVERLAY_PADDING * 2), MailFrame:GetHeight() + (OVERLAY_PADDING * 2))
-  overlay:ClearAllPoints()
-  overlay:SetPoint('CENTER', MailFrame, 'CENTER')
-  overlay:Show()
+    if overlay and mailButton and mailButton:IsShown() and mailButton.index and restrictedIndexSet[mailButton.index] then
+      local _, _, sender = GetInboxHeaderInfo(mailButton.index)
+      overlay.inboxIndex = mailButton.index
+      overlay.senderText:SetText(Ambiguate(sender or UNKNOWN, 'short'))
+      overlay:Show()
+    elseif overlay then
+      overlay.inboxIndex = nil
+      overlay:Hide()
+    end
+  end
 end
 
 function FreshSoD_HideMailRestrictionOverlay()
-  if overlay then
-    overlay:Hide()
+  for slotIndex = 1, NUM_MAIL_ROWS do
+    local overlay = rowOverlays[slotIndex]
+    if overlay then
+      overlay.inboxIndex = nil
+      overlay:Hide()
+    end
   end
+
+  if openAllBlocker then
+    openAllBlocker:Hide()
+  end
+
+  if OpenAllMail then
+    OpenAllMail:Enable()
+  end
+
+  wipe(restrictedIndexSet)
 end
 
 function FreshSoD_UpdateMailRestrictionOverlay()
-  if MailFrame and MailFrame:IsShown() and FreshSoD_HasNonGuildMail() then
-    FreshSoD_ShowMailRestrictionOverlay()
+  if not MailFrame or not MailFrame:IsShown() or not InboxFrame or not InboxFrame:IsShown() then
+    FreshSoD_HideMailRestrictionOverlay()
     return
   end
 
-  FreshSoD_HideMailRestrictionOverlay()
+  buildRestrictedIndexSet()
+
+  if not hasRestrictedMail() then
+    FreshSoD_HideMailRestrictionOverlay()
+    return
+  end
+
+  updateRowOverlays()
+  updateOpenAllBlocker()
 end

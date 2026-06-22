@@ -1,5 +1,11 @@
 # Patch Notes
 
+## 1.1.3 (2026-06-22)
+
+**FEATURES:**
+• New Mail UI to avoid "mail locked" scenarios
+
+
 ## 1.1.2 (2026-06-21)
 
 **FEATURES:**

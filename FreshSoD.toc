@@ -1,6 +1,6 @@
 ## Interface: 11508
 ## Title: SoD Guild Found
-## Version: 1.1.2
+## Version: 1.1.3
 ## Author: BonniesDad
 ## Notes: Addon to ensure a fresh SoD playthrough for guild found. 
 ## Dependencies: BonniesUtilities
@@ -30,9 +30,9 @@ Functions/TradeRestriction/Utils/IsPlayerInGuildRoster.lua
 Functions/TradeRestriction/Utils/IsTradePartnerInMyGuild.lua
 Functions/TradeRestriction/Utils/PrintRestrictionMessage.lua
 Functions/TradeRestriction/Utils/RefreshGuildRoster.lua
+Functions/TradeRestriction/Utils/CanSendMailToRecipient.lua
 Functions/TradeRestriction/Utils/GetNonGuildMailIndices.lua
 Functions/TradeRestriction/Utils/ReturnNonGuildMail.lua
-Functions/TradeRestriction/Utils/CanSendMailToRecipient.lua
 Functions/TradeRestriction/MailRestrictionOverlay.lua
 Functions/TradeRestriction/SendMailRestrictionOverlay.lua
 Functions/TradeRestriction/MailRestriction.lua
