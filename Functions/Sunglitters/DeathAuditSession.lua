@@ -47,6 +47,7 @@ local function clearAuditorSession(sendCancel)
   end
 
   if sendCancel and session.targetName and session.auditId then
+    FreshSoD_PrintDeathAuditCancelled(Ambiguate(session.targetName, 'short'), true)
     FreshSoD_SendDeathAuditCancel(session.targetName, session.auditId)
   end
 end
@@ -100,6 +101,7 @@ function FreshSoD_StartDeathAudit()
   }
 
   FreshSoD_SendDeathAuditStart(targetName, auditId, auditorName)
+  FreshSoD_PrintDeathAuditStarted(Ambiguate(targetName, 'short'), true)
 
   local inspectParent = InspectPaperDollFrame or InspectFrame or UIParent
   auditorSession.progressBar = FreshSoD_ShowAuditProgressBar({
@@ -145,6 +147,8 @@ function FreshSoD_HandleDeathAuditStart(auditId, auditorName, sender)
     progressBar = nil,
   }
 
+  FreshSoD_PrintDeathAuditStarted(Ambiguate(sender, 'short'), false)
+
   auditeeSession.progressBar = FreshSoD_ShowAuditProgressBar({
     parent = UIParent,
     label = 'Being audited...',
@@ -166,6 +170,7 @@ end
 
 function FreshSoD_HandleDeathAuditCancel(auditId)
   if auditeeSession and auditeeSession.auditId == auditId then
+    FreshSoD_PrintDeathAuditCancelled(Ambiguate(auditeeSession.auditorName, 'short'), false)
     clearAuditeeSession()
   end
 end
@@ -184,7 +189,10 @@ function FreshSoD_HandleDeathAuditRequest(auditId, sender)
   end
 
   clearAuditeeSession()
-  FreshSoD_SendDeathAuditResponse(sender, auditId, FreshSoD_GetDeathTaxOwedCopper())
+
+  local taxCopper = FreshSoD_GetDeathTaxOwedCopper()
+  FreshSoD_SendDeathAuditResponse(sender, auditId, taxCopper)
+  FreshSoD_PrintDeathAuditCompleted(Ambiguate(sender, 'short'), taxCopper, false)
 end
 
 function FreshSoD_HandleDeathAuditResponse(auditId, taxCopper, sender)
@@ -201,7 +209,7 @@ function FreshSoD_HandleDeathAuditResponse(auditId, taxCopper, sender)
   end
 
   clearAuditorSession(false)
-  FreshSoD_PrintDeathAuditResult(Ambiguate(sender, 'short'), taxCopper)
+  FreshSoD_PrintDeathAuditCompleted(Ambiguate(sender, 'short'), taxCopper, true)
 end
 
 local inspectCancelFrame = CreateFrame('Frame')
