@@ -260,28 +260,49 @@ function FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
   processAnnouncementQueue()
 end
 
+local GUILD_MESSAGE_DELAY = 0.5
+
+function FreshSoD_HandlePlayerDeathTax()
+  if not FreshSoD_IsDeathTaxGuild() then
+    return
+  end
+
+  if not FreshSoD_ShouldApplyDeathTaxOnDeath() then
+    return
+  end
+
+  local copperCoins = GetMoney()
+  local tax = math.floor(copperCoins * 0.10)
+  local playerName = UnitName('player') or 'You'
+
+  FreshSoD_AddDeathTaxOwedCopper(tax)
+  FreshSoD_SyncLocalDeathTaxLeaderboardEntry()
+  local totalCopper = FreshSoD_GetDeathTaxTotalAccumulatedCopper()
+
+  FreshSoD_ShowDeathTaxAnnouncement(playerName, tax)
+
+  local function sendGuildDeathTaxMessages()
+    if not FreshSoD_IsDeathTaxGuild() or not IsInGuild() then
+      return
+    end
+
+    FreshSoD_SendDeathTaxAddonMessage(playerName, tax)
+    FreshSoD_SendDeathTaxLeaderboardSync(playerName, totalCopper)
+  end
+
+  if C_Timer and C_Timer.After then
+    C_Timer.After(GUILD_MESSAGE_DELAY, sendGuildDeathTaxMessages)
+  else
+    sendGuildDeathTaxMessages()
+  end
+end
+
 local sunglittersFrame = CreateFrame('Frame')
 
 sunglittersFrame:RegisterEvent('PLAYER_DEAD')
 
 sunglittersFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_DEAD' then
-    if not FreshSoD_IsDeathTaxGuild() then
-      return
-    end
-
-    if not FreshSoD_ShouldApplyDeathTaxOnDeath() then
-      return
-    end
-
-    local copperCoins = GetMoney()
-    local tax = math.floor(copperCoins * 0.10)
-    local playerName = UnitName('player') or 'You'
-
-    FreshSoD_AddDeathTaxOwedCopper(tax)
-    FreshSoD_SyncLocalDeathTaxLeaderboardEntry()
-    FreshSoD_SendDeathTaxAddonMessage(playerName, tax)
-    FreshSoD_SendDeathTaxLeaderboardSync(playerName, FreshSoD_GetDeathTaxTotalAccumulatedCopper())
-    FreshSoD_ShowDeathTaxAnnouncement(playerName, tax)
+    FreshSoD_HandlePlayerDeathTax()
   end
 end)

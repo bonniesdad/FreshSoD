@@ -7,7 +7,7 @@ local DAMAGE_EVENTS = {
 }
 
 local playerGUID
-local killedByHostilePlayer = false
+local lastDamageFromHostilePlayer = false
 
 local function isInDungeonOrRaid()
   local inInstance, instanceType = IsInInstance()
@@ -33,17 +33,17 @@ local function isPvpDeath()
     return true
   end
 
-  return killedByHostilePlayer
+  return lastDamageFromHostilePlayer
 end
 
 function FreshSoD_ShouldApplyDeathTaxOnDeath()
   if isInDungeonOrRaid() then
-    killedByHostilePlayer = false
+    lastDamageFromHostilePlayer = false
     return false
   end
 
   local pvpDeath = isPvpDeath()
-  killedByHostilePlayer = false
+  lastDamageFromHostilePlayer = false
 
   if pvpDeath then
     return false
@@ -61,7 +61,7 @@ deathTaxExemptionFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 deathTaxExemptionFrame:SetScript('OnEvent', function(_, event)
   if event == 'PLAYER_LOGIN' or event == 'PLAYER_ALIVE' then
     playerGUID = UnitGUID('player')
-    killedByHostilePlayer = false
+    lastDamageFromHostilePlayer = false
     return
   end
 
@@ -79,9 +79,7 @@ deathTaxExemptionFrame:SetScript('OnEvent', function(_, event)
     return
   end
 
-  if isHostilePlayerSource(sourceFlags) then
-    killedByHostilePlayer = true
-  end
+  lastDamageFromHostilePlayer = isHostilePlayerSource(sourceFlags)
 end)
 
 if UnitGUID('player') then

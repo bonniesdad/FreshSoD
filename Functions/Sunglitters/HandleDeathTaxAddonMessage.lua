@@ -33,7 +33,7 @@ end
 
 local function handleDeathTaxAnnouncementMessage(message, sender)
   local playerName, taxCopper = FreshSoD_ParseDeathTaxAddonMessage(message)
-  if not playerName or not taxCopper then
+  if not playerName or taxCopper == nil then
     return false
   end
 
