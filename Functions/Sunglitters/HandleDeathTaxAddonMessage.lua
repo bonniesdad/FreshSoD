@@ -11,24 +11,18 @@ end
 local function handleDeathTaxLeaderboardMessage(message, sender)
   local playerName, totalCopper = FreshSoD_ParseDeathTaxLeaderboardMessage(message)
   if not playerName or totalCopper == nil then
-    FreshSoD_LogDeathTax('DL ignored: parse failed (' .. tostring(message) .. ')')
     return false
   end
 
   if not FreshSoD_IsPlayerInGuildRoster(sender) then
-    FreshSoD_LogDeathTax('DL ignored: sender not in roster (' .. tostring(sender) .. ')')
     return false
   end
 
   if normalizePlayerName(sender) ~= normalizePlayerName(playerName) then
-    FreshSoD_LogDeathTax(
-      'DL ignored: sender/name mismatch (sender=' .. tostring(sender) .. ', player=' .. tostring(playerName) .. ')'
-    )
     return false
   end
 
   FreshSoD_SetDeathTaxLeaderboardEntry(playerName, totalCopper)
-  FreshSoD_LogDeathTax('DL applied: ' .. tostring(playerName) .. ' total=' .. tostring(totalCopper) .. 'c')
 
   if FreshSoD_RefreshDeathTaxPanel then
     FreshSoD_RefreshDeathTaxPanel()
@@ -40,29 +34,22 @@ end
 local function handleDeathTaxAnnouncementMessage(message, sender)
   local playerName, taxCopper = FreshSoD_ParseDeathTaxAddonMessage(message)
   if not playerName or taxCopper == nil then
-    FreshSoD_LogDeathTax('DT ignored: parse failed (' .. tostring(message) .. ')')
     return false
   end
 
   if not FreshSoD_IsPlayerInGuildRoster(sender) then
-    FreshSoD_LogDeathTax('DT ignored: sender not in roster (' .. tostring(sender) .. ')')
     return false
   end
 
   if normalizePlayerName(sender) ~= normalizePlayerName(playerName) then
-    FreshSoD_LogDeathTax(
-      'DT ignored: sender/name mismatch (sender=' .. tostring(sender) .. ', player=' .. tostring(playerName) .. ')'
-    )
     return false
   end
 
   local localPlayerName = UnitName('player')
   if localPlayerName and normalizePlayerName(sender) == normalizePlayerName(localPlayerName) then
-    FreshSoD_LogDeathTax('DT ignored: own message (local announcement used instead)')
     return false
   end
 
-  FreshSoD_LogDeathTax('DT received from ' .. tostring(sender) .. ' for ' .. tostring(playerName) .. ' (' .. tostring(taxCopper) .. 'c)')
   FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
   return true
 end
@@ -85,11 +72,8 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
   end
 
   if not FreshSoD_IsDeathTaxGuild() then
-    FreshSoD_LogDeathTax('Guild message ignored: not a death tax guild (' .. tostring(message) .. ' from ' .. tostring(sender) .. ')')
     return
   end
-
-  FreshSoD_LogDeathTax('Guild message received: ' .. tostring(message) .. ' from ' .. tostring(sender))
 
   if message:match('^DL:') then
     handleDeathTaxLeaderboardMessage(message, sender)

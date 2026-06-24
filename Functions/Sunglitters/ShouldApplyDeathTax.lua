@@ -28,8 +28,6 @@ end
 
 function FreshSoD_ShouldApplyDeathTaxOnDeath()
   if isInDungeonOrRaid() then
-    local _, instanceType = IsInInstance()
-    FreshSoD_LogDeathTax('Exempt: in instance (' .. tostring(instanceType) .. ')')
     lastDamageFromPlayer = false
     return false
   end
@@ -38,11 +36,9 @@ function FreshSoD_ShouldApplyDeathTaxOnDeath()
   lastDamageFromPlayer = false
 
   if killedByPlayer then
-    FreshSoD_LogDeathTax('Exempt: final hit from a player')
     return false
   end
 
-  FreshSoD_LogDeathTax('Death tax applies (final hit not from a player)')
   return true
 end
 

@@ -15,7 +15,12 @@ function FreshSoD_SendDeathTaxClearDebt(targetName)
     return false
   end
 
-  return sendWhisperAddonMessage(targetName, CLEAR_DEBT_MESSAGE)
+  if not sendWhisperAddonMessage(targetName, CLEAR_DEBT_MESSAGE) then
+    return false
+  end
+
+  FreshSoD_PrintDeathTaxDebtClearSent(Ambiguate(targetName, 'short'))
+  return true
 end
 
 function FreshSoD_HandleDeathTaxClearDebt(sender)
@@ -31,7 +36,11 @@ function FreshSoD_HandleDeathTaxClearDebt(sender)
     return
   end
 
+  local officerName = Ambiguate(sender, 'short')
+  local owedCopper = FreshSoD_GetDeathTaxOwedCopper()
   FreshSoD_ClearDeathTaxOwedCopper()
+  FreshSoD_PrintDeathTaxDebtClearReceived(officerName, owedCopper)
+  FreshSoD_ShowDeathTaxDebtClearedNotification(officerName, owedCopper)
 end
 
 local addonMessageFrame = CreateFrame('Frame')

@@ -23,6 +23,7 @@ local BORDER_ALPHA = 0.7
 local DIVIDER_ALPHA = 0.55
 
 local TITLE_COLOR = { 0.92, 0.22, 0.18 }
+local CLEAR_TITLE_COLOR = { 0.78, 0.48, 0.12 }
 local BORDER_COLOR = { 0.78, 0.48, 0.12 }
 local BODY_COLOR = { 0.9, 0.88, 0.84 }
 local TAX_COLOR = { 1, 0.82, 0 }
@@ -65,6 +66,85 @@ function FreshSoD_FormatDeathTaxAmount(taxCopper)
   return formatTaxAmount(taxCopper)
 end
 
+local function buildDebtClearedMessage(officerName, clearedCopper)
+  if clearedCopper and clearedCopper > 0 then
+    return string.format(
+      '%s%s|r%s cleared your death tax debt of %s%s|r%s.',
+      colorCode(BODY_COLOR),
+      officerName,
+      colorCode(BODY_COLOR),
+      colorCode(TAX_COLOR),
+      formatTaxAmount(clearedCopper),
+      colorCode(BODY_COLOR)
+    )
+  end
+
+  return string.format(
+    '%s%s|r%s cleared your death tax debt.',
+    colorCode(BODY_COLOR),
+    officerName,
+    colorCode(BODY_COLOR)
+  )
+end
+
+local function displayAnnouncementPanel(headerTitle, headerColor, message, playSound, queuePosition)
+  ensureAnnouncementFrame()
+
+  isShowingAnnouncement = true
+  announcementFrame.headerTitle:SetText(headerTitle)
+  announcementFrame.headerTitle:SetTextColor(headerColor[1], headerColor[2], headerColor[3])
+
+  if playSound then
+    FreshSoD_PlayDeathTaxSound()
+  end
+
+  if queuePosition and queuePosition > 1 then
+    updateQueueMultiplier(queuePosition)
+  else
+    announcementFrame.multiplier:Hide()
+    announcementFrame.multiplierJiggleAmplitude = 0
+  end
+
+  announcementFrame.text:SetText(message)
+  local textHeight = announcementFrame.text:GetStringHeight()
+  announcementFrame:SetHeight(
+    HEADER_HEIGHT + 1 + CONTENT_TOP_GAP + textHeight + CONTENT_BOTTOM_PADDING
+  )
+  announcementFrame:SetAlpha(1)
+  announcementFrame:Show()
+  announcementFrame.fadeTimer = DISPLAY_DURATION
+
+  announcementFrame:SetScript('OnUpdate', function(self, elapsed)
+    self.fadeTimer = self.fadeTimer - elapsed
+    if self.fadeTimer <= FADE_DURATION then
+      self:SetAlpha(math.max(self.fadeTimer / FADE_DURATION, 0))
+    end
+    if self.multiplier:IsShown() and (self.multiplierJiggleAmplitude or 0) > 0 then
+      self.multiplierJiggleTime = (self.multiplierJiggleTime or 0) + elapsed
+      local amplitude = self.multiplierJiggleAmplitude
+      local wiggleX = math.sin(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED) * amplitude
+      local wiggleY = math.cos(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED * 1.3) * amplitude * 0.6
+      self.multiplier:SetPoint(
+        'LEFT',
+        self.headerTitle,
+        'RIGHT',
+        MULTIPLIER_TITLE_GAP + wiggleX,
+        wiggleY
+      )
+    end
+    if self.fadeTimer <= 0 then
+      self:SetScript('OnUpdate', nil)
+      self:Hide()
+      self.multiplier:Hide()
+      isShowingAnnouncement = false
+      if #announcementQueue == 0 then
+        announcementBatchCounter = 0
+      end
+      processAnnouncementQueue()
+    end
+  end)
+end
+
 local function buildAnnouncementMessage(playerName, taxCopper)
   return string.format(
     '%s%s|r%s has died, they owe %s%s|r%s in death tax.|r',
@@ -79,16 +159,13 @@ end
 
 function FreshSoD_PlayDeathTaxSound()
   if FreshSoD_AreDeathTaxNotificationsDisabled() then
-    FreshSoD_LogDeathTax('Sound skipped: notifications disabled')
     return
   end
 
   if FreshSoD_AreDeathTaxSoundsMuted() then
-    FreshSoD_LogDeathTax('Sound skipped: sounds muted')
     return
   end
 
-  FreshSoD_LogDeathTax('Playing death tax sound')
   PlaySoundFile(DEATH_TAX_SOUNDS[math.random(#DEATH_TAX_SOUNDS)], 'Master')
 end
 
@@ -201,64 +278,46 @@ local function processAnnouncementQueue()
   end
 
   local nextAnnouncement = table.remove(announcementQueue, 1)
+
+  if nextAnnouncement.type == 'debt_cleared' then
+    displayAnnouncementPanel(
+      'DEBT CLEARED',
+      CLEAR_TITLE_COLOR,
+      buildDebtClearedMessage(nextAnnouncement.officerName, nextAnnouncement.clearedCopper),
+      false
+    )
+    return
+  end
+
   local playerName = nextAnnouncement.playerName
   local taxCopper = nextAnnouncement.taxCopper
   local queuePosition = nextAnnouncement.queuePosition
 
-  ensureAnnouncementFrame()
-
-  isShowingAnnouncement = true
-  FreshSoD_LogDeathTax('Showing announcement for ' .. tostring(playerName) .. ' (queue x' .. tostring(queuePosition) .. ')')
-  FreshSoD_PlayDeathTaxSound()
-  updateQueueMultiplier(queuePosition)
-  announcementFrame.text:SetText(buildAnnouncementMessage(playerName, taxCopper))
-  local textHeight = announcementFrame.text:GetStringHeight()
-  announcementFrame:SetHeight(
-    HEADER_HEIGHT + 1 + CONTENT_TOP_GAP + textHeight + CONTENT_BOTTOM_PADDING
+  displayAnnouncementPanel(
+    'DEATH TAX',
+    TITLE_COLOR,
+    buildAnnouncementMessage(playerName, taxCopper),
+    true,
+    queuePosition
   )
-  announcementFrame:SetAlpha(1)
-  announcementFrame:Show()
-  announcementFrame.fadeTimer = DISPLAY_DURATION
+end
 
-  announcementFrame:SetScript('OnUpdate', function(self, elapsed)
-    self.fadeTimer = self.fadeTimer - elapsed
-    if self.fadeTimer <= FADE_DURATION then
-      self:SetAlpha(math.max(self.fadeTimer / FADE_DURATION, 0))
-    end
-    if self.multiplier:IsShown() and (self.multiplierJiggleAmplitude or 0) > 0 then
-      self.multiplierJiggleTime = (self.multiplierJiggleTime or 0) + elapsed
-      local amplitude = self.multiplierJiggleAmplitude
-      local wiggleX = math.sin(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED) * amplitude
-      local wiggleY = math.cos(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED * 1.3) * amplitude * 0.6
-      self.multiplier:SetPoint(
-        'LEFT',
-        self.headerTitle,
-        'RIGHT',
-        MULTIPLIER_TITLE_GAP + wiggleX,
-        wiggleY
-      )
-    end
-    if self.fadeTimer <= 0 then
-      self:SetScript('OnUpdate', nil)
-      self:Hide()
-      self.multiplier:Hide()
-      isShowingAnnouncement = false
-      if #announcementQueue == 0 then
-        announcementBatchCounter = 0
-      end
-      processAnnouncementQueue()
-    end
-  end)
+function FreshSoD_ShowDeathTaxDebtClearedNotification(officerName, clearedCopper)
+  table.insert(announcementQueue, {
+    type = 'debt_cleared',
+    officerName = officerName,
+    clearedCopper = clearedCopper,
+  })
+  processAnnouncementQueue()
 end
 
 function FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
   if FreshSoD_AreDeathTaxNotificationsDisabled() then
-    FreshSoD_LogDeathTax('Announcement skipped: notifications disabled locally')
     return
   end
 
-  FreshSoD_LogDeathTax('Queueing announcement for ' .. tostring(playerName) .. ' (' .. tostring(taxCopper) .. 'c)')
   table.insert(announcementQueue, {
+    type = 'death',
     playerName = playerName,
     taxCopper = taxCopper,
     queuePosition = getNextQueuePosition(),
@@ -269,15 +328,11 @@ end
 local GUILD_MESSAGE_DELAY = 0.5
 
 function FreshSoD_HandlePlayerDeathTax()
-  FreshSoD_LogDeathTax('PLAYER_DEAD handler started')
-
   if not FreshSoD_IsDeathTaxGuild() then
-    FreshSoD_LogDeathTax('Skipped: not a death tax guild (guild=' .. tostring(FreshSoD_GetPlayerGuildName and FreshSoD_GetPlayerGuildName()) .. ')')
     return
   end
 
   if not FreshSoD_ShouldApplyDeathTaxOnDeath() then
-    FreshSoD_LogDeathTax('Skipped: death tax exempt for this death')
     return
   end
 
@@ -288,27 +343,15 @@ function FreshSoD_HandlePlayerDeathTax()
   FreshSoD_AddDeathTaxOwedCopper(tax)
   FreshSoD_SyncLocalDeathTaxLeaderboardEntry()
   local totalCopper = FreshSoD_GetDeathTaxTotalAccumulatedCopper()
-  local owedCopper = FreshSoD_GetDeathTaxOwedCopper()
-
-  FreshSoD_LogDeathTax(
-    'Applied tax: money=' .. tostring(copperCoins)
-      .. 'c tax=' .. tostring(tax)
-      .. 'c owed=' .. tostring(owedCopper)
-      .. 'c total=' .. tostring(totalCopper) .. 'c'
-  )
 
   FreshSoD_ShowDeathTaxAnnouncement(playerName, tax)
 
   local function sendGuildDeathTaxMessages()
-    FreshSoD_LogDeathTax('Sending guild messages (delayed)')
-
     if not FreshSoD_IsDeathTaxGuild() then
-      FreshSoD_LogDeathTax('Guild send aborted: no longer a death tax guild')
       return
     end
 
     if not IsInGuild() then
-      FreshSoD_LogDeathTax('Guild send aborted: not in guild')
       return
     end
 
@@ -317,7 +360,6 @@ function FreshSoD_HandlePlayerDeathTax()
   end
 
   if C_Timer and C_Timer.After then
-    FreshSoD_LogDeathTax('Scheduling guild messages in ' .. tostring(GUILD_MESSAGE_DELAY) .. 's')
     C_Timer.After(GUILD_MESSAGE_DELAY, sendGuildDeathTaxMessages)
   else
     sendGuildDeathTaxMessages()
@@ -330,7 +372,6 @@ sunglittersFrame:RegisterEvent('PLAYER_DEAD')
 
 sunglittersFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_DEAD' then
-    FreshSoD_LogDeathTax('PLAYER_DEAD event received')
     FreshSoD_HandlePlayerDeathTax()
   end
 end)
