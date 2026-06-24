@@ -1,0 +1,27 @@
+local function ensureDeathTaxSoundMuteDB()
+  if not FRESH_SOD_DB then
+    FRESH_SOD_DB = {}
+  end
+
+  if not FRESH_SOD_DB.globalSettings then
+    FRESH_SOD_DB.globalSettings = {}
+  end
+
+  if FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted == nil then
+    FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted = false
+  end
+end
+
+function FreshSoD_AreDeathTaxSoundsMuted()
+  ensureDeathTaxSoundMuteDB()
+  return FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted == true
+end
+
+function FreshSoD_SetDeathTaxSoundsMuted(isMuted)
+  ensureDeathTaxSoundMuteDB()
+  FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted = isMuted == true
+end
+
+function FreshSoD_ToggleDeathTaxSoundsMuted()
+  FreshSoD_SetDeathTaxSoundsMuted(not FreshSoD_AreDeathTaxSoundsMuted())
+end

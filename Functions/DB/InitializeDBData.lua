@@ -29,4 +29,12 @@ function FreshSoD_InitializeDBData()
   if FreshSoD_EnsureGuildVerificationDB then
     FreshSoD_EnsureGuildVerificationDB()
   end
+
+  if not FRESH_SOD_DB.globalSettings then
+    FRESH_SOD_DB.globalSettings = {}
+  end
+
+  if FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted == nil then
+    FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted = false
+  end
 end

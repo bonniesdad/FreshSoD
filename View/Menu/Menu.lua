@@ -155,6 +155,58 @@ if closeButtonPushed then
   closeButtonPushed:SetTexCoord(0, 1, 0, 1)
 end
 
+local deathTaxMuteButton = CreateFrame('Button', nil, titleBar)
+deathTaxMuteButton:SetSize(52, 20)
+deathTaxMuteButton:SetPoint('LEFT', titleBar, 'LEFT', 12, 4)
+deathTaxMuteButton:Hide()
+
+local deathTaxMuteLabel = deathTaxMuteButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+deathTaxMuteLabel:SetPoint('CENTER', deathTaxMuteButton, 'CENTER', 0, 0)
+deathTaxMuteLabel:SetTextColor(0.922, 0.871, 0.761)
+
+deathTaxMuteButton:SetHighlightTexture('Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight', 'ADD')
+
+local function updateDeathTaxMuteButton()
+  if not FreshSoD_IsDeathTaxGuild or not FreshSoD_IsDeathTaxGuild() then
+    deathTaxMuteButton:Hide()
+    return
+  end
+
+  deathTaxMuteButton:Show()
+
+  if FreshSoD_AreDeathTaxSoundsMuted() then
+    deathTaxMuteLabel:SetText('Unmute')
+    deathTaxMuteButton:SetScript('OnEnter', function(self)
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      GameTooltip:SetText('Unmute death tax sounds', nil, nil, nil, nil, true)
+      GameTooltip:Show()
+    end)
+  else
+    deathTaxMuteLabel:SetText('Mute')
+    deathTaxMuteButton:SetScript('OnEnter', function(self)
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      GameTooltip:SetText('Mute death tax sounds', nil, nil, nil, nil, true)
+      GameTooltip:Show()
+    end)
+  end
+end
+
+deathTaxMuteButton:SetScript('OnLeave', function()
+  GameTooltip:Hide()
+end)
+
+deathTaxMuteButton:SetScript('OnClick', function()
+  if FreshSoD_ToggleDeathTaxSoundsMuted then
+    FreshSoD_ToggleDeathTaxSoundsMuted()
+    updateDeathTaxMuteButton()
+  end
+end)
+
+local deathTaxMuteFrame = CreateFrame('Frame')
+deathTaxMuteFrame:RegisterEvent('GUILD_ROSTER_UPDATE')
+deathTaxMuteFrame:RegisterEvent('PLAYER_GUILD_UPDATE')
+deathTaxMuteFrame:SetScript('OnEvent', updateDeathTaxMuteButton)
+
 function FreshSoD_ToggleFreshSoDSettings()
   if settingsFrame:IsShown() then
     if FreshSoD_ResetTabState then
@@ -166,6 +218,7 @@ function FreshSoD_ToggleFreshSoDSettings()
     settingsFrame:Hide()
   else
     updateSettingsFrameBackdrop()
+    updateDeathTaxMuteButton()
     if FreshSoD_InitializeTabs then
       FreshSoD_InitializeTabs(settingsFrame)
     end
@@ -181,6 +234,7 @@ end
 
 function OpenFreshSoDSettingsToTab(tabIndex)
   updateSettingsFrameBackdrop()
+  updateDeathTaxMuteButton()
   if FreshSoD_InitializeTabs then
     FreshSoD_InitializeTabs(settingsFrame)
   end

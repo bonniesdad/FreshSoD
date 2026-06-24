@@ -80,7 +80,17 @@ View/GuildBoardTab/GuildBoardTab.lua
 
 ## Sunglitters
 Functions/Sunglitters/IsDeathTaxGuild.lua
+Functions/Sunglitters/IsOfficerGuildRank.lua
+Functions/Sunglitters/DeathTaxSoundMute.lua
+Functions/Sunglitters/ShouldApplyDeathTax.lua
 Functions/Sunglitters/ParseDeathTaxAddonMessage.lua
+Functions/Sunglitters/ParseDeathAuditAddonMessage.lua
 Functions/Sunglitters/SendDeathTaxAddonMessage.lua
+Functions/Sunglitters/SendDeathAuditAddonMessage.lua
+Functions/Sunglitters/AuditProgressBar.lua
 Functions/Sunglitters/DeathGoldTaxAnnouncement.lua
+Functions/Sunglitters/PrintDeathAuditResult.lua
+Functions/Sunglitters/DeathAuditSession.lua
+Functions/Sunglitters/PlayerAudit.lua
 Functions/Sunglitters/HandleDeathTaxAddonMessage.lua
+Functions/Sunglitters/HandleDeathAuditAddonMessage.lua

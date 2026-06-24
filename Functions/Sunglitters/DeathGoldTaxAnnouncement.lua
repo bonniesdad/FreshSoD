@@ -61,6 +61,10 @@ local function formatTaxAmount(taxCopper)
   return table.concat(parts, ' ')
 end
 
+function FreshSoD_FormatDeathTaxAmount(taxCopper)
+  return formatTaxAmount(taxCopper)
+end
+
 local function buildAnnouncementMessage(playerName, taxCopper)
   return string.format(
     '%s%s|r%s has died, they owe %s%s|r%s in death tax.|r',
@@ -73,8 +77,12 @@ local function buildAnnouncementMessage(playerName, taxCopper)
   )
 end
 
-local function playDeathTaxSound()
-  PlaySoundFile(DEATH_TAX_SOUNDS[math.random(#DEATH_TAX_SOUNDS)], 'Dialog')
+function FreshSoD_PlayDeathTaxSound()
+  if FreshSoD_AreDeathTaxSoundsMuted() then
+    return
+  end
+
+  PlaySoundFile(DEATH_TAX_SOUNDS[math.random(#DEATH_TAX_SOUNDS)], 'Master')
 end
 
 local function ensureAnnouncementFrame()
@@ -193,7 +201,7 @@ local function processAnnouncementQueue()
   ensureAnnouncementFrame()
 
   isShowingAnnouncement = true
-  playDeathTaxSound()
+  FreshSoD_PlayDeathTaxSound()
   updateQueueMultiplier(queuePosition)
   announcementFrame.text:SetText(buildAnnouncementMessage(playerName, taxCopper))
   local textHeight = announcementFrame.text:GetStringHeight()
@@ -251,6 +259,10 @@ sunglittersFrame:RegisterEvent('PLAYER_DEAD')
 sunglittersFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_DEAD' then
     if not FreshSoD_IsDeathTaxGuild() then
+      return
+    end
+
+    if not FreshSoD_ShouldApplyDeathTaxOnDeath() then
       return
     end
 
