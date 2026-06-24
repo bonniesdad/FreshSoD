@@ -83,6 +83,7 @@ View/DeathTaxTab/DeathTaxTab.lua
 Functions/Sunglitters/IsDeathTaxGuild.lua
 Functions/Sunglitters/IsOfficerGuildRank.lua
 Functions/Sunglitters/DeathTaxSoundMute.lua
+Functions/Sunglitters/DeathTaxDebug.lua
 Functions/Sunglitters/DeathTaxLeaderboard.lua
 Functions/Sunglitters/ShouldApplyDeathTax.lua
 Functions/Sunglitters/ParseDeathTaxAddonMessage.lua

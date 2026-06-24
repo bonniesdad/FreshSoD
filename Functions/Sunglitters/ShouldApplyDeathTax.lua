@@ -38,17 +38,29 @@ end
 
 function FreshSoD_ShouldApplyDeathTaxOnDeath()
   if isInDungeonOrRaid() then
+    local _, instanceType = IsInInstance()
+    FreshSoD_LogDeathTax('Exempt: in instance (' .. tostring(instanceType) .. ')')
     lastDamageFromHostilePlayer = false
     return false
   end
 
+  local pvpTimer = GetPVPTimer and GetPVPTimer() or 0
+  local hostilePlayerKill = lastDamageFromHostilePlayer
   local pvpDeath = isPvpDeath()
   lastDamageFromHostilePlayer = false
 
   if pvpDeath then
+    if pvpTimer > 0 then
+      FreshSoD_LogDeathTax('Exempt: PvP timer active (' .. tostring(pvpTimer) .. ')')
+    elseif hostilePlayerKill then
+      FreshSoD_LogDeathTax('Exempt: last damage from hostile player')
+    else
+      FreshSoD_LogDeathTax('Exempt: PvP death')
+    end
     return false
   end
 
+  FreshSoD_LogDeathTax('Death tax applies (open world, non-PvP killing blow)')
   return true
 end
 

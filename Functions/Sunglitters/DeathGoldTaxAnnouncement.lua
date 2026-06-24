@@ -79,13 +79,16 @@ end
 
 function FreshSoD_PlayDeathTaxSound()
   if FreshSoD_AreDeathTaxNotificationsDisabled() then
+    FreshSoD_LogDeathTax('Sound skipped: notifications disabled')
     return
   end
 
   if FreshSoD_AreDeathTaxSoundsMuted() then
+    FreshSoD_LogDeathTax('Sound skipped: sounds muted')
     return
   end
 
+  FreshSoD_LogDeathTax('Playing death tax sound')
   PlaySoundFile(DEATH_TAX_SOUNDS[math.random(#DEATH_TAX_SOUNDS)], 'Master')
 end
 
@@ -205,6 +208,7 @@ local function processAnnouncementQueue()
   ensureAnnouncementFrame()
 
   isShowingAnnouncement = true
+  FreshSoD_LogDeathTax('Showing announcement for ' .. tostring(playerName) .. ' (queue x' .. tostring(queuePosition) .. ')')
   FreshSoD_PlayDeathTaxSound()
   updateQueueMultiplier(queuePosition)
   announcementFrame.text:SetText(buildAnnouncementMessage(playerName, taxCopper))
@@ -249,9 +253,11 @@ end
 
 function FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
   if FreshSoD_AreDeathTaxNotificationsDisabled() then
+    FreshSoD_LogDeathTax('Announcement skipped: notifications disabled locally')
     return
   end
 
+  FreshSoD_LogDeathTax('Queueing announcement for ' .. tostring(playerName) .. ' (' .. tostring(taxCopper) .. 'c)')
   table.insert(announcementQueue, {
     playerName = playerName,
     taxCopper = taxCopper,
@@ -263,11 +269,15 @@ end
 local GUILD_MESSAGE_DELAY = 0.5
 
 function FreshSoD_HandlePlayerDeathTax()
+  FreshSoD_LogDeathTax('PLAYER_DEAD handler started')
+
   if not FreshSoD_IsDeathTaxGuild() then
+    FreshSoD_LogDeathTax('Skipped: not a death tax guild (guild=' .. tostring(FreshSoD_GetPlayerGuildName and FreshSoD_GetPlayerGuildName()) .. ')')
     return
   end
 
   if not FreshSoD_ShouldApplyDeathTaxOnDeath() then
+    FreshSoD_LogDeathTax('Skipped: death tax exempt for this death')
     return
   end
 
@@ -278,11 +288,27 @@ function FreshSoD_HandlePlayerDeathTax()
   FreshSoD_AddDeathTaxOwedCopper(tax)
   FreshSoD_SyncLocalDeathTaxLeaderboardEntry()
   local totalCopper = FreshSoD_GetDeathTaxTotalAccumulatedCopper()
+  local owedCopper = FreshSoD_GetDeathTaxOwedCopper()
+
+  FreshSoD_LogDeathTax(
+    'Applied tax: money=' .. tostring(copperCoins)
+      .. 'c tax=' .. tostring(tax)
+      .. 'c owed=' .. tostring(owedCopper)
+      .. 'c total=' .. tostring(totalCopper) .. 'c'
+  )
 
   FreshSoD_ShowDeathTaxAnnouncement(playerName, tax)
 
   local function sendGuildDeathTaxMessages()
-    if not FreshSoD_IsDeathTaxGuild() or not IsInGuild() then
+    FreshSoD_LogDeathTax('Sending guild messages (delayed)')
+
+    if not FreshSoD_IsDeathTaxGuild() then
+      FreshSoD_LogDeathTax('Guild send aborted: no longer a death tax guild')
+      return
+    end
+
+    if not IsInGuild() then
+      FreshSoD_LogDeathTax('Guild send aborted: not in guild')
       return
     end
 
@@ -291,6 +317,7 @@ function FreshSoD_HandlePlayerDeathTax()
   end
 
   if C_Timer and C_Timer.After then
+    FreshSoD_LogDeathTax('Scheduling guild messages in ' .. tostring(GUILD_MESSAGE_DELAY) .. 's')
     C_Timer.After(GUILD_MESSAGE_DELAY, sendGuildDeathTaxMessages)
   else
     sendGuildDeathTaxMessages()
@@ -303,6 +330,7 @@ sunglittersFrame:RegisterEvent('PLAYER_DEAD')
 
 sunglittersFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_DEAD' then
+    FreshSoD_LogDeathTax('PLAYER_DEAD event received')
     FreshSoD_HandlePlayerDeathTax()
   end
 end)

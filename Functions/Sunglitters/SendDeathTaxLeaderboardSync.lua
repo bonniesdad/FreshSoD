@@ -1,16 +1,25 @@
 local ADDON_PREFIX = 'FreshSoD'
 
 function FreshSoD_SendDeathTaxLeaderboardSync(playerName, totalCopper)
-  if not IsInGuild() or not FreshSoD_IsDeathTaxGuild() then
-    return
+  if not IsInGuild() then
+    FreshSoD_LogDeathTax('DL send skipped: not in guild')
+    return false
+  end
+
+  if not FreshSoD_IsDeathTaxGuild() then
+    FreshSoD_LogDeathTax('DL send skipped: not a death tax guild')
+    return false
   end
 
   if not playerName or totalCopper == nil then
-    return
+    FreshSoD_LogDeathTax('DL send skipped: invalid args (player=' .. tostring(playerName) .. ', total=' .. tostring(totalCopper) .. ')')
+    return false
   end
 
   local message = 'DL:' .. math.max(tonumber(totalCopper) or 0, 0) .. ':' .. playerName
   C_ChatInfo.SendAddonMessage(ADDON_PREFIX, message, 'GUILD')
+  FreshSoD_LogDeathTax('DL sent: ' .. message)
+  return true
 end
 
 function FreshSoD_BroadcastDeathTaxLeaderboardSync()

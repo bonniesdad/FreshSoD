@@ -48,6 +48,10 @@ function FreshSoD_InitializeDBData()
     FRESH_SOD_DB.globalSettings.deathTaxNotificationsDisabled = false
   end
 
+  if FRESH_SOD_DB.globalSettings.deathTaxDebug == nil then
+    FRESH_SOD_DB.globalSettings.deathTaxDebug = true
+  end
+
   if FreshSoD_EnsureDeathTaxLeaderboardDB then
     FreshSoD_EnsureDeathTaxLeaderboardDB()
   end
