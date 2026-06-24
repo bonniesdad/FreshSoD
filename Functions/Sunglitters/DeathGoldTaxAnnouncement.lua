@@ -87,64 +87,6 @@ local function buildDebtClearedMessage(officerName, clearedCopper)
   )
 end
 
-local function displayAnnouncementPanel(headerTitle, headerColor, message, playSound, queuePosition)
-  ensureAnnouncementFrame()
-
-  isShowingAnnouncement = true
-  announcementFrame.headerTitle:SetText(headerTitle)
-  announcementFrame.headerTitle:SetTextColor(headerColor[1], headerColor[2], headerColor[3])
-
-  if playSound then
-    FreshSoD_PlayDeathTaxSound()
-  end
-
-  if queuePosition and queuePosition > 1 then
-    updateQueueMultiplier(queuePosition)
-  else
-    announcementFrame.multiplier:Hide()
-    announcementFrame.multiplierJiggleAmplitude = 0
-  end
-
-  announcementFrame.text:SetText(message)
-  local textHeight = announcementFrame.text:GetStringHeight()
-  announcementFrame:SetHeight(
-    HEADER_HEIGHT + 1 + CONTENT_TOP_GAP + textHeight + CONTENT_BOTTOM_PADDING
-  )
-  announcementFrame:SetAlpha(1)
-  announcementFrame:Show()
-  announcementFrame.fadeTimer = DISPLAY_DURATION
-
-  announcementFrame:SetScript('OnUpdate', function(self, elapsed)
-    self.fadeTimer = self.fadeTimer - elapsed
-    if self.fadeTimer <= FADE_DURATION then
-      self:SetAlpha(math.max(self.fadeTimer / FADE_DURATION, 0))
-    end
-    if self.multiplier:IsShown() and (self.multiplierJiggleAmplitude or 0) > 0 then
-      self.multiplierJiggleTime = (self.multiplierJiggleTime or 0) + elapsed
-      local amplitude = self.multiplierJiggleAmplitude
-      local wiggleX = math.sin(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED) * amplitude
-      local wiggleY = math.cos(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED * 1.3) * amplitude * 0.6
-      self.multiplier:SetPoint(
-        'LEFT',
-        self.headerTitle,
-        'RIGHT',
-        MULTIPLIER_TITLE_GAP + wiggleX,
-        wiggleY
-      )
-    end
-    if self.fadeTimer <= 0 then
-      self:SetScript('OnUpdate', nil)
-      self:Hide()
-      self.multiplier:Hide()
-      isShowingAnnouncement = false
-      if #announcementQueue == 0 then
-        announcementBatchCounter = 0
-      end
-      processAnnouncementQueue()
-    end
-  end)
-end
-
 local function buildAnnouncementMessage(playerName, taxCopper)
   return string.format(
     '%s%s|r%s has died, they owe %s%s|r%s in death tax.|r',
@@ -272,7 +214,67 @@ local function updateQueueMultiplier(queuePosition)
   end
 end
 
-local function processAnnouncementQueue()
+local processAnnouncementQueue
+
+local function displayAnnouncementPanel(headerTitle, headerColor, message, playSound, queuePosition)
+  ensureAnnouncementFrame()
+
+  isShowingAnnouncement = true
+  announcementFrame.headerTitle:SetText(headerTitle)
+  announcementFrame.headerTitle:SetTextColor(headerColor[1], headerColor[2], headerColor[3])
+
+  if playSound then
+    FreshSoD_PlayDeathTaxSound()
+  end
+
+  if queuePosition and queuePosition > 1 then
+    updateQueueMultiplier(queuePosition)
+  else
+    announcementFrame.multiplier:Hide()
+    announcementFrame.multiplierJiggleAmplitude = 0
+  end
+
+  announcementFrame.text:SetText(message)
+  local textHeight = announcementFrame.text:GetStringHeight()
+  announcementFrame:SetHeight(
+    HEADER_HEIGHT + 1 + CONTENT_TOP_GAP + textHeight + CONTENT_BOTTOM_PADDING
+  )
+  announcementFrame:SetAlpha(1)
+  announcementFrame:Show()
+  announcementFrame.fadeTimer = DISPLAY_DURATION
+
+  announcementFrame:SetScript('OnUpdate', function(self, elapsed)
+    self.fadeTimer = self.fadeTimer - elapsed
+    if self.fadeTimer <= FADE_DURATION then
+      self:SetAlpha(math.max(self.fadeTimer / FADE_DURATION, 0))
+    end
+    if self.multiplier:IsShown() and (self.multiplierJiggleAmplitude or 0) > 0 then
+      self.multiplierJiggleTime = (self.multiplierJiggleTime or 0) + elapsed
+      local amplitude = self.multiplierJiggleAmplitude
+      local wiggleX = math.sin(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED) * amplitude
+      local wiggleY = math.cos(self.multiplierJiggleTime * MULTIPLIER_JIGGLE_SPEED * 1.3) * amplitude * 0.6
+      self.multiplier:SetPoint(
+        'LEFT',
+        self.headerTitle,
+        'RIGHT',
+        MULTIPLIER_TITLE_GAP + wiggleX,
+        wiggleY
+      )
+    end
+    if self.fadeTimer <= 0 then
+      self:SetScript('OnUpdate', nil)
+      self:Hide()
+      self.multiplier:Hide()
+      isShowingAnnouncement = false
+      if #announcementQueue == 0 then
+        announcementBatchCounter = 0
+      end
+      processAnnouncementQueue()
+    end
+  end)
+end
+
+processAnnouncementQueue = function()
   if isShowingAnnouncement or #announcementQueue == 0 then
     return
   end
