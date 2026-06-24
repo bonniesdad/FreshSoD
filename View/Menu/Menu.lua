@@ -102,6 +102,8 @@ settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
 settingsTitleLabel:SetText('SoD Guild Found')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
+_G.FreshSoD_MenuTitleBar = titleBar
+
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
 dividerFrame:SetSize(settingsFrame:GetWidth() + 10, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
@@ -155,57 +157,82 @@ if closeButtonPushed then
   closeButtonPushed:SetTexCoord(0, 1, 0, 1)
 end
 
-local deathTaxMuteButton = CreateFrame('Button', nil, titleBar)
-deathTaxMuteButton:SetSize(52, 20)
-deathTaxMuteButton:SetPoint('LEFT', titleBar, 'LEFT', 12, 4)
-deathTaxMuteButton:Hide()
+local SUNGLITTERS_TEXTURE_PATH = 'Interface\\AddOns\\FreshSoD\\Textures\\Sunglitters'
+local AUDIT_TEXTURE = SUNGLITTERS_TEXTURE_PATH .. '\\sunglitters-audit-1.png'
+local AUDIT_TEXTURE_HIGHLIGHT = SUNGLITTERS_TEXTURE_PATH .. '\\sunglitters-audit-2.png'
+local PORTRAIT_MASK = 'Interface\\CHARACTERFRAME\\TempPortraitAlphaMask'
+local BORDER_TEXTURE = 'Interface\\Minimap\\MiniMap-TrackingBorder'
 
-local deathTaxMuteLabel = deathTaxMuteButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
-deathTaxMuteLabel:SetPoint('CENTER', deathTaxMuteButton, 'CENTER', 0, 0)
-deathTaxMuteLabel:SetTextColor(0.922, 0.871, 0.761)
+local ICON_SIZE = 20
+local BORDER_SIZE = 53
+local BUTTON_SIZE = 36
+local ICON_INSET = (BUTTON_SIZE - ICON_SIZE) / 2
+local BORDER_OUTSET = (BORDER_SIZE - BUTTON_SIZE) / 2
+local BORDER_OFFSET_X = 20
+local BORDER_OFFSET_Y = 20
+local ICON_OFFSET_X = 10
+local ICON_OFFSET_Y = 30
+local ICON_POS_X = BORDER_OUTSET + ICON_INSET + ICON_OFFSET_X - BORDER_OFFSET_X
+local ICON_POS_Y = -(BORDER_OUTSET + ICON_INSET) + ICON_OFFSET_Y - BORDER_OFFSET_Y
 
-deathTaxMuteButton:SetHighlightTexture('Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight', 'ADD')
+local deathTaxHeaderButton = CreateFrame('Button', nil, titleBar)
+deathTaxHeaderButton:SetSize(BORDER_SIZE, BORDER_SIZE)
+deathTaxHeaderButton:SetPoint('LEFT', titleBar, 'LEFT', 6, -8)
+deathTaxHeaderButton:Hide()
 
-local function updateDeathTaxMuteButton()
+local deathTaxHeaderIcon = deathTaxHeaderButton:CreateTexture(nil, 'ARTWORK')
+deathTaxHeaderIcon:SetSize(ICON_SIZE, ICON_SIZE)
+deathTaxHeaderIcon:SetPoint('TOPLEFT', deathTaxHeaderButton, 'TOPLEFT', ICON_POS_X, ICON_POS_Y)
+deathTaxHeaderIcon:SetTexture(AUDIT_TEXTURE)
+deathTaxHeaderButton.icon = deathTaxHeaderIcon
+
+local deathTaxHeaderMask = deathTaxHeaderButton:CreateMaskTexture()
+deathTaxHeaderMask:SetTexture(PORTRAIT_MASK, 'CLAMPTOBLACKADDITIVE', 'CLAMPTOBLACKADDITIVE')
+deathTaxHeaderMask:SetAllPoints(deathTaxHeaderIcon)
+deathTaxHeaderIcon:AddMaskTexture(deathTaxHeaderMask)
+
+local deathTaxHeaderBorder = deathTaxHeaderButton:CreateTexture(nil, 'OVERLAY')
+deathTaxHeaderBorder:SetSize(BORDER_SIZE, BORDER_SIZE)
+deathTaxHeaderBorder:SetPoint('TOPLEFT', deathTaxHeaderButton, 'TOPLEFT', 0, 0)
+deathTaxHeaderBorder:SetTexture(BORDER_TEXTURE)
+
+local function updateDeathTaxHeaderButton()
   if not FreshSoD_IsDeathTaxGuild or not FreshSoD_IsDeathTaxGuild() then
-    deathTaxMuteButton:Hide()
+    deathTaxHeaderButton:Hide()
     return
   end
 
-  deathTaxMuteButton:Show()
-
-  if FreshSoD_AreDeathTaxSoundsMuted() then
-    deathTaxMuteLabel:SetText('Unmute')
-    deathTaxMuteButton:SetScript('OnEnter', function(self)
-      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      GameTooltip:SetText('Unmute death tax sounds', nil, nil, nil, nil, true)
-      GameTooltip:Show()
-    end)
-  else
-    deathTaxMuteLabel:SetText('Mute')
-    deathTaxMuteButton:SetScript('OnEnter', function(self)
-      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      GameTooltip:SetText('Mute death tax sounds', nil, nil, nil, nil, true)
-      GameTooltip:Show()
-    end)
-  end
+  deathTaxHeaderButton:Show()
 end
 
-deathTaxMuteButton:SetScript('OnLeave', function()
+deathTaxHeaderButton:SetScript('OnEnter', function(self)
+  self.icon:SetTexture(AUDIT_TEXTURE_HIGHLIGHT)
+  GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+  GameTooltip:SetText('Death Tax', nil, nil, nil, nil, true)
+  GameTooltip:Show()
+end)
+
+deathTaxHeaderButton:SetScript('OnLeave', function(self)
+  self.icon:SetTexture(AUDIT_TEXTURE)
   GameTooltip:Hide()
 end)
 
-deathTaxMuteButton:SetScript('OnClick', function()
-  if FreshSoD_ToggleDeathTaxSoundsMuted then
-    FreshSoD_ToggleDeathTaxSoundsMuted()
-    updateDeathTaxMuteButton()
+deathTaxHeaderButton:SetScript('OnClick', function()
+  if FreshSoD_ToggleDeathTaxPanel then
+    FreshSoD_ToggleDeathTaxPanel()
   end
 end)
 
-local deathTaxMuteFrame = CreateFrame('Frame')
-deathTaxMuteFrame:RegisterEvent('GUILD_ROSTER_UPDATE')
-deathTaxMuteFrame:RegisterEvent('PLAYER_GUILD_UPDATE')
-deathTaxMuteFrame:SetScript('OnEvent', updateDeathTaxMuteButton)
+local deathTaxHeaderFrame = CreateFrame('Frame')
+deathTaxHeaderFrame:RegisterEvent('GUILD_ROSTER_UPDATE')
+deathTaxHeaderFrame:RegisterEvent('PLAYER_GUILD_UPDATE')
+deathTaxHeaderFrame:SetScript('OnEvent', updateDeathTaxHeaderButton)
+
+function FreshSoD_OpenDeathTaxTab()
+  if FreshSoD_ToggleDeathTaxPanel then
+    FreshSoD_ToggleDeathTaxPanel()
+  end
+end
 
 function FreshSoD_ToggleFreshSoDSettings()
   if settingsFrame:IsShown() then
@@ -218,7 +245,7 @@ function FreshSoD_ToggleFreshSoDSettings()
     settingsFrame:Hide()
   else
     updateSettingsFrameBackdrop()
-    updateDeathTaxMuteButton()
+    updateDeathTaxHeaderButton()
     if FreshSoD_InitializeTabs then
       FreshSoD_InitializeTabs(settingsFrame)
     end
@@ -234,7 +261,7 @@ end
 
 function OpenFreshSoDSettingsToTab(tabIndex)
   updateSettingsFrameBackdrop()
-  updateDeathTaxMuteButton()
+  updateDeathTaxHeaderButton()
   if FreshSoD_InitializeTabs then
     FreshSoD_InitializeTabs(settingsFrame)
   end

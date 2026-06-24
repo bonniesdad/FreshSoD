@@ -120,7 +120,11 @@ function FreshSoD_InitializeTabs(settingsFrame)
   tabContents[2] = createTabContent(2, settingsFrame)
 end
 
-function FreshSoD_SwitchToTab(index)
+function FreshSoD_SwitchToTab(index, skipDeathTaxHide)
+  if not skipDeathTaxHide and FreshSoD_HideDeathTaxPanel then
+    FreshSoD_HideDeathTaxPanel(true)
+  end
+
   for i, content in ipairs(tabContents) do
     content:Hide()
   end
@@ -221,6 +225,10 @@ function FreshSoD_HideAllTabs()
 end
 
 function FreshSoD_ResetTabState()
+  if FreshSoD_HideDeathTaxPanel then
+    FreshSoD_HideDeathTaxPanel(true)
+  end
+
   activeTab = 1
   for i, content in ipairs(tabContents) do
     content:Hide()

@@ -78,6 +78,10 @@ local function buildAnnouncementMessage(playerName, taxCopper)
 end
 
 function FreshSoD_PlayDeathTaxSound()
+  if FreshSoD_AreDeathTaxNotificationsDisabled() then
+    return
+  end
+
   if FreshSoD_AreDeathTaxSoundsMuted() then
     return
   end
@@ -244,6 +248,10 @@ local function processAnnouncementQueue()
 end
 
 function FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
+  if FreshSoD_AreDeathTaxNotificationsDisabled() then
+    return
+  end
+
   table.insert(announcementQueue, {
     playerName = playerName,
     taxCopper = taxCopper,
@@ -271,7 +279,9 @@ sunglittersFrame:SetScript('OnEvent', function(self, event, ...)
     local playerName = UnitName('player') or 'You'
 
     FreshSoD_AddDeathTaxOwedCopper(tax)
+    FreshSoD_SyncLocalDeathTaxLeaderboardEntry()
     FreshSoD_SendDeathTaxAddonMessage(playerName, tax)
+    FreshSoD_SendDeathTaxLeaderboardSync(playerName, FreshSoD_GetDeathTaxTotalAccumulatedCopper())
     FreshSoD_ShowDeathTaxAnnouncement(playerName, tax)
   end
 end)

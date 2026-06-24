@@ -16,14 +16,19 @@ local ICON_OFFSET_X = 10
 local ICON_OFFSET_Y = 30
 local INSPECT_ANCHOR_X = 50
 local INSPECT_ANCHOR_Y = 80
+local CLEAR_DEBT_ANCHOR_X = 50
+local CLEAR_DEBT_ANCHOR_Y = 30
+local CLEAR_DEBT_ICON = 'Interface\\Icons\\INV_Misc_Coin_16'
+local CLEAR_DEBT_ICON_HIGHLIGHT = { 1, 0.9, 0.45 }
 
 local ICON_POS_X = BORDER_OUTSET + ICON_INSET + ICON_OFFSET_X - BORDER_OFFSET_X
 local ICON_POS_Y = -(BORDER_OUTSET + ICON_INSET) + ICON_OFFSET_Y - BORDER_OFFSET_Y
 
 local auditButton
+local clearDebtButton
 local isInitialized = false
 
-local function shouldShowAuditButton()
+local function shouldShowInspectDeathTaxButtons()
   if not FreshSoD_IsDeathTaxGuild() then
     return false
   end
@@ -52,16 +57,95 @@ local function shouldShowAuditButton()
   return true
 end
 
-local function updateAuditButtonVisibility()
-  if not auditButton then
+local function updateInspectDeathTaxButtonVisibility()
+  if not auditButton and not clearDebtButton then
     return
   end
 
-  if shouldShowAuditButton() then
-    auditButton:Show()
+  if shouldShowInspectDeathTaxButtons() then
+    if auditButton then
+      auditButton:Show()
+    end
+    if clearDebtButton then
+      clearDebtButton:Show()
+    end
   else
-    auditButton:Hide()
+    if auditButton then
+      auditButton:Hide()
+    end
+    if clearDebtButton then
+      clearDebtButton:Hide()
+    end
   end
+end
+
+local function createCircularInspectButton(parent, iconTexture, tooltipText, onClick)
+  local button = CreateFrame('Button', nil, parent)
+  button:SetSize(BORDER_SIZE, BORDER_SIZE)
+  button:SetFrameLevel(parent:GetFrameLevel() + 20)
+  button:EnableMouse(true)
+
+  local icon = button:CreateTexture(nil, 'ARTWORK')
+  icon:SetSize(ICON_SIZE, ICON_SIZE)
+  icon:SetPoint('TOPLEFT', button, 'TOPLEFT', ICON_POS_X, ICON_POS_Y)
+  icon:SetTexture(iconTexture)
+  button.icon = icon
+
+  local mask = button:CreateMaskTexture()
+  mask:SetTexture(PORTRAIT_MASK, 'CLAMPTOBLACKADDITIVE', 'CLAMPTOBLACKADDITIVE')
+  mask:SetAllPoints(icon)
+  icon:AddMaskTexture(mask)
+
+  local border = button:CreateTexture(nil, 'OVERLAY')
+  border:SetSize(BORDER_SIZE, BORDER_SIZE)
+  border:SetPoint('TOPLEFT', button, 'TOPLEFT', 0, 0)
+  border:SetTexture(BORDER_TEXTURE)
+
+  button:SetScript('OnClick', onClick)
+
+  button:SetScript('OnEnter', function(self)
+    if self.iconHighlightColor then
+      self.icon:SetVertexColor(
+        self.iconHighlightColor[1],
+        self.iconHighlightColor[2],
+        self.iconHighlightColor[3]
+      )
+    end
+    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    GameTooltip:SetText(tooltipText)
+    GameTooltip:Show()
+  end)
+
+  button:SetScript('OnLeave', function(self)
+    self.icon:SetVertexColor(1, 1, 1)
+    GameTooltip:Hide()
+  end)
+
+  button:Hide()
+  return button
+end
+
+local function getInspectTargetName()
+  if not InspectFrame or not InspectFrame.unit then
+    return nil
+  end
+
+  return GetUnitName(InspectFrame.unit, true)
+end
+
+local function createClearDebtButton(inspectParent)
+  if clearDebtButton then
+    return
+  end
+
+  clearDebtButton = createCircularInspectButton(inspectParent, CLEAR_DEBT_ICON, 'Clear debt', function()
+    local targetName = getInspectTargetName()
+    if targetName then
+      FreshSoD_SendDeathTaxClearDebt(targetName)
+    end
+  end)
+  clearDebtButton.iconHighlightColor = CLEAR_DEBT_ICON_HIGHLIGHT
+  clearDebtButton:SetPoint('BOTTOMRIGHT', inspectParent, 'BOTTOMRIGHT', -CLEAR_DEBT_ANCHOR_X, CLEAR_DEBT_ANCHOR_Y)
 end
 
 local function createAuditButton()
@@ -71,31 +155,10 @@ local function createAuditButton()
 
   local inspectParent = InspectPaperDollFrame or InspectFrame
 
-  auditButton = CreateFrame('Button', 'FreshSoDAuditButton', inspectParent)
-  auditButton:SetSize(BORDER_SIZE, BORDER_SIZE)
-  auditButton:SetPoint('TOPRIGHT', inspectParent, 'TOPRIGHT', -INSPECT_ANCHOR_X, -INSPECT_ANCHOR_Y)
-  auditButton:SetFrameLevel(inspectParent:GetFrameLevel() + 20)
-  auditButton:EnableMouse(true)
-
-  local icon = auditButton:CreateTexture(nil, 'ARTWORK')
-  icon:SetSize(ICON_SIZE, ICON_SIZE)
-  icon:SetPoint('TOPLEFT', auditButton, 'TOPLEFT', ICON_POS_X, ICON_POS_Y)
-  icon:SetTexture(AUDIT_TEXTURE)
-  auditButton.icon = icon
-
-  local mask = auditButton:CreateMaskTexture()
-  mask:SetTexture(PORTRAIT_MASK, 'CLAMPTOBLACKADDITIVE', 'CLAMPTOBLACKADDITIVE')
-  mask:SetAllPoints(icon)
-  icon:AddMaskTexture(mask)
-
-  local border = auditButton:CreateTexture(nil, 'OVERLAY')
-  border:SetSize(BORDER_SIZE, BORDER_SIZE)
-  border:SetPoint('TOPLEFT', auditButton, 'TOPLEFT', 0, 0)
-  border:SetTexture(BORDER_TEXTURE)
-
-  auditButton:SetScript('OnClick', function()
+  auditButton = createCircularInspectButton(inspectParent, AUDIT_TEXTURE, 'Audit', function()
     FreshSoD_StartDeathAudit()
   end)
+  auditButton:SetPoint('TOPRIGHT', inspectParent, 'TOPRIGHT', -INSPECT_ANCHOR_X, -INSPECT_ANCHOR_Y)
 
   auditButton:SetScript('OnEnter', function(self)
     self.icon:SetTexture(AUDIT_TEXTURE_HIGHLIGHT)
@@ -109,19 +172,22 @@ local function createAuditButton()
     GameTooltip:Hide()
   end)
 
-  auditButton:Hide()
+  createClearDebtButton(inspectParent)
 end
 
-local function ensureAuditButton()
+local function ensureInspectDeathTaxButtons()
   if not FreshSoD_IsDeathTaxGuild() or not FreshSoD_AmIOfficerGuildRank() then
     if auditButton then
       auditButton:Hide()
+    end
+    if clearDebtButton then
+      clearDebtButton:Hide()
     end
     return
   end
 
   createAuditButton()
-  updateAuditButtonVisibility()
+  updateInspectDeathTaxButtonVisibility()
 end
 
 local function initializeInspectAudit()
@@ -130,25 +196,31 @@ local function initializeInspectAudit()
   end
 
   isInitialized = true
-  ensureAuditButton()
+  ensureInspectDeathTaxButtons()
 
-  InspectPaperDollFrame:HookScript('OnShow', updateAuditButtonVisibility)
+  InspectPaperDollFrame:HookScript('OnShow', updateInspectDeathTaxButtonVisibility)
   InspectPaperDollFrame:HookScript('OnHide', function()
     if auditButton then
       auditButton:Hide()
     end
+    if clearDebtButton then
+      clearDebtButton:Hide()
+    end
   end)
 
   if InspectFrame then
-    InspectFrame:HookScript('OnShow', updateAuditButtonVisibility)
+    InspectFrame:HookScript('OnShow', updateInspectDeathTaxButtonVisibility)
     InspectFrame:HookScript('OnHide', function()
       if auditButton then
         auditButton:Hide()
       end
+      if clearDebtButton then
+        clearDebtButton:Hide()
+      end
     end)
   end
 
-  updateAuditButtonVisibility()
+  updateInspectDeathTaxButtonVisibility()
 end
 
 local auditFrame = CreateFrame('Frame')
@@ -165,7 +237,7 @@ auditFrame:SetScript('OnEvent', function(_, event, loadedAddon)
   end
 
   if event == 'GUILD_ROSTER_UPDATE' or event == 'PLAYER_GUILD_UPDATE' then
-    ensureAuditButton()
+    ensureInspectDeathTaxButtons()
   end
 end)
 
@@ -177,10 +249,10 @@ hooksecurefunc('InspectUnit', function()
   if C_Timer and C_Timer.After then
     C_Timer.After(0, function()
       initializeInspectAudit()
-      ensureAuditButton()
+      ensureInspectDeathTaxButtons()
     end)
   else
     initializeInspectAudit()
-    ensureAuditButton()
+    ensureInspectDeathTaxButtons()
   end
 end)

@@ -77,16 +77,21 @@ View/VerificationTab/VerificationTabWhisperInput.lua
 View/VerificationTab/VerificationTabTamperingHistory.lua
 View/VerificationTab/VerificationTab.lua
 View/GuildBoardTab/GuildBoardTab.lua
+View/DeathTaxTab/DeathTaxTab.lua
 
 ## Sunglitters
 Functions/Sunglitters/IsDeathTaxGuild.lua
 Functions/Sunglitters/IsOfficerGuildRank.lua
 Functions/Sunglitters/DeathTaxSoundMute.lua
+Functions/Sunglitters/DeathTaxLeaderboard.lua
 Functions/Sunglitters/ShouldApplyDeathTax.lua
 Functions/Sunglitters/ParseDeathTaxAddonMessage.lua
+Functions/Sunglitters/ParseDeathTaxLeaderboardMessage.lua
 Functions/Sunglitters/ParseDeathAuditAddonMessage.lua
 Functions/Sunglitters/SendDeathTaxAddonMessage.lua
+Functions/Sunglitters/SendDeathTaxLeaderboardSync.lua
 Functions/Sunglitters/SendDeathAuditAddonMessage.lua
+Functions/Sunglitters/DeathTaxClearDebt.lua
 Functions/Sunglitters/AuditProgressBar.lua
 Functions/Sunglitters/DeathGoldTaxAnnouncement.lua
 Functions/Sunglitters/PrintDeathAuditResult.lua

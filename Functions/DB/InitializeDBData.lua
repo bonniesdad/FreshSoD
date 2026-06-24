@@ -11,6 +11,7 @@ function FreshSoD_InitializeDBData()
     minimapButton = { hide = false },
     levelBracketAcknowledged = {},
     deathTaxOwedCopper = 0,
+    deathTaxTotalAccumulatedCopper = 0,
   }
 
   local characterGUID = UnitGUID('player')
@@ -24,7 +25,12 @@ function FreshSoD_InitializeDBData()
     end
   end
 
-  FRESH_SOD_GLOBAL_SETTINGS = FRESH_SOD_DB.characterSettings[characterGUID]
+  local characterSettings = FRESH_SOD_DB.characterSettings[characterGUID]
+  if characterSettings.deathTaxTotalAccumulatedCopper == nil then
+    characterSettings.deathTaxTotalAccumulatedCopper = characterSettings.deathTaxOwedCopper or 0
+  end
+
+  FRESH_SOD_GLOBAL_SETTINGS = characterSettings
 
   if FreshSoD_EnsureGuildVerificationDB then
     FreshSoD_EnsureGuildVerificationDB()
@@ -36,5 +42,13 @@ function FreshSoD_InitializeDBData()
 
   if FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted == nil then
     FRESH_SOD_DB.globalSettings.deathTaxSoundsMuted = false
+  end
+
+  if FRESH_SOD_DB.globalSettings.deathTaxNotificationsDisabled == nil then
+    FRESH_SOD_DB.globalSettings.deathTaxNotificationsDisabled = false
+  end
+
+  if FreshSoD_EnsureDeathTaxLeaderboardDB then
+    FreshSoD_EnsureDeathTaxLeaderboardDB()
   end
 end

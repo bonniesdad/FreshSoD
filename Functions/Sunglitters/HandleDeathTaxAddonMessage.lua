@@ -8,6 +8,52 @@ local function normalizePlayerName(playerName)
   return string.lower(Ambiguate(playerName, 'short'))
 end
 
+local function handleDeathTaxLeaderboardMessage(message, sender)
+  local playerName, totalCopper = FreshSoD_ParseDeathTaxLeaderboardMessage(message)
+  if not playerName or totalCopper == nil then
+    return false
+  end
+
+  if not FreshSoD_IsPlayerInGuildRoster(sender) then
+    return false
+  end
+
+  if normalizePlayerName(sender) ~= normalizePlayerName(playerName) then
+    return false
+  end
+
+  FreshSoD_SetDeathTaxLeaderboardEntry(playerName, totalCopper)
+
+  if FreshSoD_RefreshDeathTaxPanel then
+    FreshSoD_RefreshDeathTaxPanel()
+  end
+
+  return true
+end
+
+local function handleDeathTaxAnnouncementMessage(message, sender)
+  local playerName, taxCopper = FreshSoD_ParseDeathTaxAddonMessage(message)
+  if not playerName or not taxCopper then
+    return false
+  end
+
+  if not FreshSoD_IsPlayerInGuildRoster(sender) then
+    return false
+  end
+
+  if normalizePlayerName(sender) ~= normalizePlayerName(playerName) then
+    return false
+  end
+
+  local localPlayerName = UnitName('player')
+  if localPlayerName and normalizePlayerName(sender) == normalizePlayerName(localPlayerName) then
+    return false
+  end
+
+  FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
+  return true
+end
+
 local addonMessageFrame = CreateFrame('Frame')
 addonMessageFrame:RegisterEvent('CHAT_MSG_ADDON')
 
@@ -21,27 +67,16 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
     return
   end
 
-  local playerName, taxCopper = FreshSoD_ParseDeathTaxAddonMessage(message)
-  if not playerName or not taxCopper then
-    return
-  end
-
   if not FreshSoD_IsDeathTaxGuild() then
     return
   end
 
-  if not FreshSoD_IsPlayerInGuildRoster(sender) then
+  if message:match('^DL:') then
+    handleDeathTaxLeaderboardMessage(message, sender)
     return
   end
 
-  if normalizePlayerName(sender) ~= normalizePlayerName(playerName) then
-    return
+  if message:match('^DT:') then
+    handleDeathTaxAnnouncementMessage(message, sender)
   end
-
-  local localPlayerName = UnitName('player')
-  if localPlayerName and normalizePlayerName(sender) == normalizePlayerName(localPlayerName) then
-    return
-  end
-
-  FreshSoD_ShowDeathTaxAnnouncement(playerName, taxCopper)
 end)
