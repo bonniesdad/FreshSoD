@@ -40,26 +40,7 @@ local function colorCode(color)
 end
 
 local function formatTaxAmount(taxCopper)
-  local gold = math.floor(taxCopper / 10000)
-  local silver = math.floor((taxCopper % 10000) / 100)
-  local copper = taxCopper % 100
-  local parts = {}
-
-  if gold > 0 then
-    table.insert(parts, string.format('%dg', gold))
-  end
-  if silver > 0 then
-    table.insert(parts, string.format('%ds', silver))
-  end
-  if copper > 0 then
-    table.insert(parts, string.format('%dc', copper))
-  end
-
-  if #parts == 0 then
-    return '0c'
-  end
-
-  return table.concat(parts, ' ')
+  return GetCoinTextureString(taxCopper or 0)
 end
 
 function FreshSoD_FormatDeathTaxAmount(taxCopper)

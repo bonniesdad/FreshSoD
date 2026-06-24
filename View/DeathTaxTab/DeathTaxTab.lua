@@ -142,9 +142,9 @@ local function buildDeathTaxPanel(settingsFrame)
 
   local leaderboardTitle = deathTaxPanel:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   leaderboardTitle:SetPoint('TOPLEFT', notificationsCheckbox, 'BOTTOMLEFT', 0, -LEADERBOARD_GAP)
-  leaderboardTitle:SetText('Debt Leaderboard')
+  leaderboardTitle:SetText('Highest tax accumulators')
   setTextColor(leaderboardTitle, RANK_COLOR)
-
+  
   deathTaxPanel.listFrame = CreateFrame('Frame', nil, deathTaxPanel)
   deathTaxPanel.listFrame:SetPoint('TOPLEFT', leaderboardTitle, 'BOTTOMLEFT', LIST_LEFT_OFFSET - 8, -TITLE_LIST_GAP)
   deathTaxPanel.listFrame:SetPoint('BOTTOMRIGHT', deathTaxPanel, 'BOTTOMRIGHT', -LIST_LEFT_OFFSET, 12)

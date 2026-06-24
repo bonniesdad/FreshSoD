@@ -2,6 +2,10 @@ local AUDIT_DURATION = 6
 local BAR_WIDTH = 220
 local BAR_HEIGHT = 48
 local STATUS_HEIGHT = 14
+local FRAME_TOP_PADDING = 10
+local BAR_LABEL_GAP = 10
+local BAR_HORIZONTAL_INSET = 14
+local FRAME_BOTTOM_PADDING = 12
 
 local activeBars = {}
 
@@ -50,13 +54,14 @@ function FreshSoD_ShowAuditProgressBar(options)
   frame:SetBackdropBorderColor(0.78, 0.48, 0.12, 0.9)
 
   local label = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  label:SetPoint('TOP', frame, 'TOP', 0, -10)
+  label:SetPoint('TOP', frame, 'TOP', 0, -FRAME_TOP_PADDING)
   label:SetText(labelText)
   label:SetTextColor(0.92, 0.87, 0.76)
 
   local statusBar = CreateFrame('StatusBar', nil, frame)
-  statusBar:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 14, 12)
-  statusBar:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -14, 12)
+  statusBar:SetPoint('TOP', label, 'BOTTOM', 0, -BAR_LABEL_GAP)
+  statusBar:SetPoint('LEFT', frame, 'LEFT', BAR_HORIZONTAL_INSET, 0)
+  statusBar:SetPoint('RIGHT', frame, 'RIGHT', -BAR_HORIZONTAL_INSET, 0)
   statusBar:SetHeight(STATUS_HEIGHT)
   statusBar:SetStatusBarTexture('Interface\\TARGETINGFRAME\\UI-StatusBar')
   statusBar:SetStatusBarColor(0.78, 0.48, 0.12)
@@ -66,6 +71,10 @@ function FreshSoD_ShowAuditProgressBar(options)
   local statusBackground = statusBar:CreateTexture(nil, 'BACKGROUND')
   statusBackground:SetAllPoints()
   statusBackground:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+
+  frame:SetHeight(
+    FRAME_TOP_PADDING + label:GetStringHeight() + BAR_LABEL_GAP + STATUS_HEIGHT + FRAME_BOTTOM_PADDING
+  )
 
   local barState = {
     frame = frame,
