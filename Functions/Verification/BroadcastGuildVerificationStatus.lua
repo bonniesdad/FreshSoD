@@ -26,6 +26,11 @@ function FreshSoD_BroadcastGuildVerificationStatusIfChanged(force)
   lastBroadcastStatus = isVerified
 end
 
+function FreshSoD_ReplyWithGuildVerificationStatus()
+  lastBroadcastStatus = nil
+  FreshSoD_BroadcastGuildVerificationStatusIfChanged()
+end
+
 local broadcastFrame = CreateFrame('Frame')
 broadcastFrame:RegisterEvent('PLAYER_LOGIN')
 broadcastFrame:RegisterEvent('PLAYER_GUILD_UPDATE')

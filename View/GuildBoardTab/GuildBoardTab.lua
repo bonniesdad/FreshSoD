@@ -208,8 +208,13 @@ local function updateCachedMemberVerificationStatus(content, lowerName, isVerifi
   return false
 end
 
-function FreshSoD_TrackGuildBoardStatusRequest(content, memberName)
-  if not content or not memberName then
+function FreshSoD_TrackGuildBoardStatusRequest(memberName)
+  if not memberName then
+    return
+  end
+
+  local content = FreshSoD_GetTabContent and FreshSoD_GetTabContent(2)
+  if not content then
     return
   end
 
@@ -230,9 +235,13 @@ function FreshSoD_OnGuildMemberVerificationUpdated(sender, isVerified)
   end
 
   pending[shortName] = nil
-  if updateCachedMemberVerificationStatus(content, shortName, isVerified) then
-    scheduleGuildBoardRefresh(content, 0)
+
+  if not updateCachedMemberVerificationStatus(content, shortName, isVerified) then
+    content.guildBoardMemberData = nil
+    content.guildBoardMembersByStatus = nil
   end
+
+  scheduleGuildBoardRefresh(content, 0)
 end
 
 local function ensureGuildBoardMemberCache(content, skipRosterRefresh)
@@ -623,7 +632,7 @@ local function ensureGuildBoardTabLayout(content)
     statusRow:SetScript('OnClick', function(self)
       local memberName = self.memberName
       if memberName and FreshSoD_SendGuildStatusRequest(memberName) then
-        FreshSoD_TrackGuildBoardStatusRequest(content, memberName)
+        FreshSoD_TrackGuildBoardStatusRequest(memberName)
         FreshSoD_PrintRestrictionMessage('Status request sent to ' .. Ambiguate(memberName, 'short') .. '. They must be online to receive the request.')
       end
     end)

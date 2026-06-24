@@ -1,5 +1,23 @@
 local ADDON_PREFIX = 'FreshSoD'
 
+local function getWhisperTargetName(playerName)
+  if not playerName or not IsInGuild() then
+    return nil
+  end
+
+  local targetShortName = Ambiguate(playerName, 'short')
+  local numMembers = GetNumGuildMembers()
+
+  for index = 1, numMembers do
+    local rosterName = GetGuildRosterInfo(index)
+    if rosterName and Ambiguate(rosterName, 'short') == targetShortName then
+      return rosterName
+    end
+  end
+
+  return playerName
+end
+
 function FreshSoD_SendGuildStatusRequest(playerName)
   if not playerName or playerName == '' then
     return false
@@ -17,6 +35,11 @@ function FreshSoD_SendGuildStatusRequest(playerName)
     return false
   end
 
-  C_ChatInfo.SendAddonMessage(ADDON_PREFIX, 'GS:1', 'WHISPER', playerName)
+  local whisperTarget = getWhisperTargetName(playerName)
+  if not whisperTarget then
+    return false
+  end
+
+  C_ChatInfo.SendAddonMessage(ADDON_PREFIX, 'GS:1', 'WHISPER', whisperTarget)
   return true
 end

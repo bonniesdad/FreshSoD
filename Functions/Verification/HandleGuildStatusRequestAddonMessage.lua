@@ -21,7 +21,13 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
     return
   end
 
-  if FreshSoD_BroadcastGuildVerificationStatusIfChanged then
-    FreshSoD_BroadcastGuildVerificationStatusIfChanged(true)
+  if not FreshSoD_ReplyWithGuildVerificationStatus then
+    return
+  end
+
+  if C_Timer and C_Timer.After then
+    C_Timer.After(0, FreshSoD_ReplyWithGuildVerificationStatus)
+  else
+    FreshSoD_ReplyWithGuildVerificationStatus()
   end
 end)
