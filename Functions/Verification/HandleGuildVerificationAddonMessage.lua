@@ -30,7 +30,7 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
 
   FreshSoD_SetGuildMemberVerificationStatus(guildName, sender, isVerified)
 
-  if FreshSoD_RefreshGuildBoardTabIfVisible then
-    FreshSoD_RefreshGuildBoardTabIfVisible()
+  if FreshSoD_OnGuildMemberVerificationUpdated then
+    FreshSoD_OnGuildMemberVerificationUpdated(sender, isVerified)
   end
 end)

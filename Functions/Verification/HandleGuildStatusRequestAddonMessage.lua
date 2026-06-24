@@ -13,7 +13,7 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
     return
   end
 
-  if not FreshSoD_ParseGuildResetMessage(message) then
+  if not FreshSoD_ParseGuildStatusRequestMessage(message) then
     return
   end
 
@@ -21,17 +21,7 @@ addonMessageFrame:SetScript('OnEvent', function(_, event, ...)
     return
   end
 
-  if not FreshSoD_IsTopGuildRank(sender) then
-    return
-  end
-
-  if type(BonniesUtilities_ResetNaughty) ~= 'function' then
-    return
-  end
-
-  BonniesUtilities_ResetNaughty()
-
   if FreshSoD_BroadcastGuildVerificationStatusIfChanged then
-    FreshSoD_BroadcastGuildVerificationStatusIfChanged()
+    FreshSoD_BroadcastGuildVerificationStatusIfChanged(true)
   end
 end)

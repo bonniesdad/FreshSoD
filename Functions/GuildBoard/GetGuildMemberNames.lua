@@ -1,8 +1,24 @@
-function FreshSoD_GetGuildMemberNames()
-  FreshSoD_RefreshGuildRoster()
+local cachedMembers
+local cachedGuildName
 
-  if not IsInGuild() then
+function FreshSoD_InvalidateGuildMemberNamesCache()
+  cachedMembers = nil
+  cachedGuildName = nil
+end
+
+function FreshSoD_GetGuildMemberNames(forceRefresh, skipRosterRefresh)
+  local guildName = FreshSoD_GetPlayerGuildName()
+  if not guildName then
+    FreshSoD_InvalidateGuildMemberNamesCache()
     return {}
+  end
+
+  if not forceRefresh and cachedMembers and cachedGuildName == guildName then
+    return cachedMembers
+  end
+
+  if not skipRosterRefresh then
+    FreshSoD_RefreshGuildRoster()
   end
 
   local members = {}
@@ -16,5 +32,7 @@ function FreshSoD_GetGuildMemberNames()
   end
 
   table.sort(members)
+  cachedMembers = members
+  cachedGuildName = guildName
   return members
 end

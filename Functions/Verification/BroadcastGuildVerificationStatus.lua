@@ -1,6 +1,6 @@
 local lastBroadcastStatus = nil
 
-function FreshSoD_BroadcastGuildVerificationStatusIfChanged()
+function FreshSoD_BroadcastGuildVerificationStatusIfChanged(force)
   if not IsInGuild() then
     lastBroadcastStatus = nil
     return
@@ -18,16 +18,12 @@ function FreshSoD_BroadcastGuildVerificationStatusIfChanged()
     FreshSoD_SetGuildMemberVerificationStatus(guildName, UnitName('player'), isVerified)
   end
 
-  if lastBroadcastStatus == isVerified then
+  if not force and lastBroadcastStatus == isVerified then
     return
   end
 
   FreshSoD_SendGuildVerificationStatus(isVerified)
   lastBroadcastStatus = isVerified
-
-  if FreshSoD_RefreshGuildBoardTabIfVisible then
-    FreshSoD_RefreshGuildBoardTabIfVisible()
-  end
 end
 
 local broadcastFrame = CreateFrame('Frame')
