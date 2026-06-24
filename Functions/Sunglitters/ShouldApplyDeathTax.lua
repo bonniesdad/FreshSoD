@@ -7,7 +7,7 @@ local DAMAGE_EVENTS = {
 }
 
 local playerGUID
-local lastDamageFromHostilePlayer = false
+local lastDamageFromPlayer = false
 
 local function isInDungeonOrRaid()
   local inInstance, instanceType = IsInInstance()
@@ -18,49 +18,31 @@ local function isInDungeonOrRaid()
   return instanceType == 'party' or instanceType == 'raid'
 end
 
-local function isHostilePlayerSource(sourceFlags)
+local function isPlayerDamageSource(sourceFlags)
   if not sourceFlags then
     return false
   end
 
-  local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0
-  local isHostile = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0
-  return isPlayer and isHostile
-end
-
-local function isPvpDeath()
-  if GetPVPTimer and GetPVPTimer() > 0 then
-    return true
-  end
-
-  return lastDamageFromHostilePlayer
+  return bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0
 end
 
 function FreshSoD_ShouldApplyDeathTaxOnDeath()
   if isInDungeonOrRaid() then
     local _, instanceType = IsInInstance()
     FreshSoD_LogDeathTax('Exempt: in instance (' .. tostring(instanceType) .. ')')
-    lastDamageFromHostilePlayer = false
+    lastDamageFromPlayer = false
     return false
   end
 
-  local pvpTimer = GetPVPTimer and GetPVPTimer() or 0
-  local hostilePlayerKill = lastDamageFromHostilePlayer
-  local pvpDeath = isPvpDeath()
-  lastDamageFromHostilePlayer = false
+  local killedByPlayer = lastDamageFromPlayer
+  lastDamageFromPlayer = false
 
-  if pvpDeath then
-    if pvpTimer > 0 then
-      FreshSoD_LogDeathTax('Exempt: PvP timer active (' .. tostring(pvpTimer) .. ')')
-    elseif hostilePlayerKill then
-      FreshSoD_LogDeathTax('Exempt: last damage from hostile player')
-    else
-      FreshSoD_LogDeathTax('Exempt: PvP death')
-    end
+  if killedByPlayer then
+    FreshSoD_LogDeathTax('Exempt: final hit from a player')
     return false
   end
 
-  FreshSoD_LogDeathTax('Death tax applies (open world, non-PvP killing blow)')
+  FreshSoD_LogDeathTax('Death tax applies (final hit not from a player)')
   return true
 end
 
@@ -73,7 +55,7 @@ deathTaxExemptionFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 deathTaxExemptionFrame:SetScript('OnEvent', function(_, event)
   if event == 'PLAYER_LOGIN' or event == 'PLAYER_ALIVE' then
     playerGUID = UnitGUID('player')
-    lastDamageFromHostilePlayer = false
+    lastDamageFromPlayer = false
     return
   end
 
@@ -91,7 +73,7 @@ deathTaxExemptionFrame:SetScript('OnEvent', function(_, event)
     return
   end
 
-  lastDamageFromHostilePlayer = isHostilePlayerSource(sourceFlags)
+  lastDamageFromPlayer = isPlayerDamageSource(sourceFlags)
 end)
 
 if UnitGUID('player') then
