@@ -2,16 +2,13 @@
 
 ## 1.1.4 (2026-06-25)
 
-**BUG FIXES:**
-• When trying to get a specific item from my mail it always takes the first one out
-
-
-## 1.1.3 (2026-06-22)
-
 **FEATURES (all guilds):**
 • Send mail to valid online sister guild members
 • Filter guild board by status (valid, invalid, unknown)
 • Click player status in guild board to request immediate update
+
+**BUG FIXES:**
+• When trying to get a specific item from my mail it always takes the first one out
 
 **Shockstate(d) only:**
 • Death Tax mute options

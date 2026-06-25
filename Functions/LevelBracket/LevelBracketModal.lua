@@ -22,8 +22,8 @@ local SCHEDULE_DATE_COLOR = { 0.55, 0.78, 0.55 }
 local BULLET_COLOR = { 0.65, 0.6, 0.5 }
 
 local TITLE_TEXT = 'You must now turn off your XP until the next phase begins'
-local SUBTITLE_TEXT = 'Speak to Grendag Brightbeard in Orgrimmar to disable XP gain'
-local SUBSUBTITLE_TEXT = "Near the entrance to 'The Drag', coordinates: 49x, 58y"
+local SUBTITLE_TEXT = 'Speak to Grendag Brightbeard in Orgrimmar or the Undercity Entrance to disable XP gain'
+local SUBSUBTITLE_TEXT = "Orgrimmar coordinates: 49x, 58y. Undercity coordinates: 66.1x, 9.6y"
 local SECTION_TITLE_TEXT = 'Phase Schedule'
 
 local SCHEDULE_ENTRIES = {

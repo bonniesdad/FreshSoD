@@ -13,9 +13,9 @@ local TITLE_TEXT = 'Sending mail in guild found'
 local TITLE_COLOR = { 1, 1, 0 }
 local TITLE_BODY_GAP = 22
 local MESSAGE_LINES = {
-  'You can send mail to your own valid guild members.\nAsk "unknown" guild members to relog to automatically send their verification status.',
+  'You can send mail to your own valid guild members.',
   'You can send mail to valid alts.',
-  'You can send mail to online sister guild members after a live verification whisper.',
+  'You can send mail to valid online sister guild members.',
 }
 
 local function getBulletText()
