@@ -45,8 +45,10 @@ local function updateSendMailButtonState()
 end
 
 local function beginVerifiedSend(recipient, sendFn, ...)
+  local sendArgs = { ... }
+
   if FreshSoD_CanSendMailToRecipient(recipient) then
-    return sendFn(recipient, ...)
+    return sendFn(recipient, unpack(sendArgs))
   end
 
   FreshSoD_BeginMailVerification(recipient, function(canSend, reason)
@@ -58,7 +60,7 @@ local function beginVerifiedSend(recipient, sendFn, ...)
       return
     end
 
-    sendFn(recipient, ...)
+    sendFn(recipient, unpack(sendArgs))
   end)
 
   return true
