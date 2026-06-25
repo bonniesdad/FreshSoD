@@ -154,6 +154,10 @@ function FreshSoD_OnMailVerificationAnswerReceived(sender, isVerified, guildName
 end
 
 function FreshSoD_OnMailVerificationQueryReceived(sender, isVerified, guildName)
+  FreshSoD_PrintRestrictionMessage(
+    Ambiguate(sender, 'short') .. ' is requesting your verification status to send you mail.'
+  )
+
   local senderPasses = FreshSoD_PassesLiveTradeVerification(isVerified, guildName, sender)
   if not senderPasses and isVerified == nil and FreshSoD_IsPlayerInGuildRoster(sender) then
     senderPasses = FreshSoD_IsPlayerValidatedInWhitelistedGuild(sender)
