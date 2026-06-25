@@ -12,6 +12,7 @@ local function hookSendMailFrame()
   end)
   SendMailFrame:HookScript('OnHide', function()
     FreshSoD_HideSendMailRestrictionOverlay()
+    FreshSoD_ClearMailVerificationSession()
   end)
 end
 
@@ -37,18 +38,47 @@ local function updateSendMailButtonState()
     return
   end
 
-  local allowed = FreshSoD_CanSendMailToRecipient(recipient)
+  local allowed = FreshSoD_CanSendMailToRecipientOrVerify(recipient)
   if not allowed then
     SendMailMailButton:Disable()
   end
 end
 
-local function blockInvalidSend(recipient)
-  local allowed, reason = FreshSoD_CanSendMailToRecipient(recipient)
-  if allowed then
+local function beginVerifiedSend(recipient, sendFn, ...)
+  if FreshSoD_CanSendMailToRecipient(recipient) then
+    return sendFn(recipient, ...)
+  end
+
+  FreshSoD_BeginMailVerification(recipient, function(canSend, reason)
+    if not canSend then
+      FreshSoD_PrintRestrictionMessage(reason)
+      if SendMailMailButton then
+        SendMailMailButton:Enable()
+      end
+      return
+    end
+
+    sendFn(recipient, ...)
+  end)
+
+  return true
+end
+
+local function blockInvalidSend(recipient, sendFn, ...)
+  if not recipient or recipient == '' then
     return false
   end
 
+  if FreshSoD_CanSendMailToRecipient(recipient) then
+    return false
+  end
+
+  if FreshSoD_CanAttemptMailVerification(recipient) then
+    beginVerifiedSend(recipient, sendFn, ...)
+    return true
+  end
+
+  local _, reason = FreshSoD_CanSendMailToRecipient(recipient)
   FreshSoD_PrintRestrictionMessage(reason)
   if SendMailMailButton then
     SendMailMailButton:Enable()
@@ -71,7 +101,7 @@ local function installCanSendHook()
       return
     end
 
-    local allowed = FreshSoD_CanSendMailToRecipient(recipient)
+    local allowed = FreshSoD_CanSendMailToRecipientOrVerify(recipient)
     if not allowed then
       SendMailMailButton:Disable()
     end
@@ -85,7 +115,7 @@ local function installSendGuard()
     if type(SendMail) == 'function' then
       local origSendMail = SendMail
       SendMail = function(recipient, ...)
-        if blockInvalidSend(recipient) then
+        if blockInvalidSend(recipient, origSendMail, ...) then
           return
         end
         return origSendMail(recipient, ...)
@@ -94,7 +124,7 @@ local function installSendGuard()
     elseif type(SendMailFrame_SendMail) == 'function' then
       local origFrameSend = SendMailFrame_SendMail
       SendMailFrame_SendMail = function(...)
-        if blockInvalidSend(getRecipient()) then
+        if blockInvalidSend(getRecipient(), origFrameSend, ...) then
           return
         end
         return origFrameSend(...)
@@ -123,6 +153,7 @@ mailSendRestrictionFrame:SetScript('OnEvent', function(_, event)
 
   if event == 'MAIL_CLOSED' then
     FreshSoD_HideSendMailRestrictionOverlay()
+    FreshSoD_ClearMailVerificationSession()
     return
   end
 

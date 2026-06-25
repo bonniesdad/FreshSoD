@@ -15,7 +15,7 @@ local TITLE_BODY_GAP = 22
 local MESSAGE_LINES = {
   'You can send mail to your own valid guild members.\nAsk "unknown" guild members to relog to automatically send their verification status.',
   'You can send mail to valid alts.',
-  'You cannot send mail to players in a sister guilds yet.',
+  'You can send mail to online sister guild members after a live verification whisper.',
 }
 
 local function getBulletText()

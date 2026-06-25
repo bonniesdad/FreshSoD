@@ -2,6 +2,20 @@
 
 ## 1.1.3 (2026-06-22)
 
+**FEATURES (all guilds):**
+• Send mail to valid online sister guild members
+• Filter guild board by status (valid, invalid, unknown)
+• Click player status in guild board to request immediate update
+
+**Shockstate(d) only:**
+• Death Tax mute options
+• Tax Collectors audit button to see how much someone owes
+• Tax Collectors clear debts button to reset players to 0
+• Tax leaderboards, to see top 10 accumilated most debt
+
+
+## 1.1.3 (2026-06-22)
+
 **FEATURES:**
 • New Mail UI to avoid "mail locked" scenarios
 
