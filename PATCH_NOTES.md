@@ -1,5 +1,11 @@
 # Patch Notes
 
+## 1.1.4 (2026-06-25)
+
+**BUG FIXES:**
+• When trying to get a specific item from my mail it always takes the first one out
+
+
 ## 1.1.3 (2026-06-22)
 
 **FEATURES:**
