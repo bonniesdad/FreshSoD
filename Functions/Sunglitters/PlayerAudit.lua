@@ -1,6 +1,4 @@
-local TEXTURE_PATH = 'Interface\\AddOns\\' .. addonName .. '\\Textures\\Sunglitters'
-local AUDIT_TEXTURE = TEXTURE_PATH .. '\\sunglitters-audit-1.png'
-local AUDIT_TEXTURE_HIGHLIGHT = TEXTURE_PATH .. '\\sunglitters-audit-2.png'
+local AUDIT_ICON = 'Interface\\Icons\\INV_Misc_Book_06'
 local PORTRAIT_MASK = 'Interface\\CHARACTERFRAME\\TempPortraitAlphaMask'
 local BORDER_TEXTURE = 'Interface\\Minimap\\MiniMap-TrackingBorder'
 
@@ -155,22 +153,10 @@ local function createAuditButton()
 
   local inspectParent = InspectPaperDollFrame or InspectFrame
 
-  auditButton = createCircularInspectButton(inspectParent, AUDIT_TEXTURE, 'Audit', function()
+  auditButton = createCircularInspectButton(inspectParent, AUDIT_ICON, 'Audit', function()
     FreshSoD_StartDeathAudit()
   end)
   auditButton:SetPoint('TOPRIGHT', inspectParent, 'TOPRIGHT', -INSPECT_ANCHOR_X, -INSPECT_ANCHOR_Y)
-
-  auditButton:SetScript('OnEnter', function(self)
-    self.icon:SetTexture(AUDIT_TEXTURE_HIGHLIGHT)
-    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Audit')
-    GameTooltip:Show()
-  end)
-
-  auditButton:SetScript('OnLeave', function(self)
-    self.icon:SetTexture(AUDIT_TEXTURE)
-    GameTooltip:Hide()
-  end)
 
   createClearDebtButton(inspectParent)
 end

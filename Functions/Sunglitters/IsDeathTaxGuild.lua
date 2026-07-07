@@ -1,6 +1,8 @@
 local DEATH_TAX_GUILDS = {
   shockstate = true,
   shockstated = true,
+  puddle = true,
+  Puddle = true,
 }
 
 function FreshSoD_IsDeathTaxGuildName(guildName)

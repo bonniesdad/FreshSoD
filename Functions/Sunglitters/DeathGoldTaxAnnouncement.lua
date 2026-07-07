@@ -29,10 +29,7 @@ local BODY_COLOR = { 0.9, 0.88, 0.84 }
 local TAX_COLOR = { 1, 0.82, 0 }
 
 local DEATH_TAX_SOUNDS = {
-  'Interface\\AddOns\\' .. addonName .. '\\Audio\\Sunglitters\\Omg.mp3',
-  'Interface\\AddOns\\' .. addonName .. '\\Audio\\Sunglitters\\Oh Slay.mp3',
-  'Interface\\AddOns\\' .. addonName .. '\\Audio\\Sunglitters\\Oh GODDH.mp3',
-  'Interface\\AddOns\\' .. addonName .. '\\Audio\\Sunglitters\\Ohh my god.mp3',
+  'Interface\\AddOns\\' .. addonName .. '\\Audio\\Sunglitters\\LootCoinSmall.mp3',
 }
 
 local function colorCode(color)

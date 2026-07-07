@@ -157,9 +157,7 @@ if closeButtonPushed then
   closeButtonPushed:SetTexCoord(0, 1, 0, 1)
 end
 
-local SUNGLITTERS_TEXTURE_PATH = 'Interface\\AddOns\\FreshSoD\\Textures\\Sunglitters'
-local AUDIT_TEXTURE = SUNGLITTERS_TEXTURE_PATH .. '\\sunglitters-audit-1.png'
-local AUDIT_TEXTURE_HIGHLIGHT = SUNGLITTERS_TEXTURE_PATH .. '\\sunglitters-audit-2.png'
+local AUDIT_ICON = 'Interface\\Icons\\INV_Misc_Book_06'
 local PORTRAIT_MASK = 'Interface\\CHARACTERFRAME\\TempPortraitAlphaMask'
 local BORDER_TEXTURE = 'Interface\\Minimap\\MiniMap-TrackingBorder'
 
@@ -183,7 +181,7 @@ deathTaxHeaderButton:Hide()
 local deathTaxHeaderIcon = deathTaxHeaderButton:CreateTexture(nil, 'ARTWORK')
 deathTaxHeaderIcon:SetSize(ICON_SIZE, ICON_SIZE)
 deathTaxHeaderIcon:SetPoint('TOPLEFT', deathTaxHeaderButton, 'TOPLEFT', ICON_POS_X, ICON_POS_Y)
-deathTaxHeaderIcon:SetTexture(AUDIT_TEXTURE)
+deathTaxHeaderIcon:SetTexture(AUDIT_ICON)
 deathTaxHeaderButton.icon = deathTaxHeaderIcon
 
 local deathTaxHeaderMask = deathTaxHeaderButton:CreateMaskTexture()
@@ -206,14 +204,12 @@ local function updateDeathTaxHeaderButton()
 end
 
 deathTaxHeaderButton:SetScript('OnEnter', function(self)
-  self.icon:SetTexture(AUDIT_TEXTURE_HIGHLIGHT)
   GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
   GameTooltip:SetText('Death Tax', nil, nil, nil, nil, true)
   GameTooltip:Show()
 end)
 
-deathTaxHeaderButton:SetScript('OnLeave', function(self)
-  self.icon:SetTexture(AUDIT_TEXTURE)
+deathTaxHeaderButton:SetScript('OnLeave', function()
   GameTooltip:Hide()
 end)
 

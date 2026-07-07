@@ -11,8 +11,8 @@ function FreshSoD_EnsureDeathTaxLeaderboardDB()
     FRESH_SOD_DB = {}
   end
 
-  if not FRESH_SOD_DB.deathTaxLeaderboard then
-    FRESH_SOD_DB.deathTaxLeaderboard = {}
+  if not FRESH_SOD_DB.deathTaxLeaderboardV2 then
+    FRESH_SOD_DB.deathTaxLeaderboardV2 = {}
   end
 end
 
@@ -24,7 +24,7 @@ function FreshSoD_SetDeathTaxLeaderboardEntry(playerName, totalCopper)
     return
   end
 
-  FRESH_SOD_DB.deathTaxLeaderboard[key] = {
+  FRESH_SOD_DB.deathTaxLeaderboardV2[key] = {
     playerName = Ambiguate(playerName, 'short'),
     totalCopper = math.max(tonumber(totalCopper) or 0, 0),
   }
@@ -34,7 +34,7 @@ function FreshSoD_GetDeathTaxLeaderboardSorted()
   FreshSoD_EnsureDeathTaxLeaderboardDB()
 
   local entries = {}
-  for _, entry in pairs(FRESH_SOD_DB.deathTaxLeaderboard) do
+  for _, entry in pairs(FRESH_SOD_DB.deathTaxLeaderboardV2) do
     if entry.totalCopper and entry.totalCopper > 0 then
       entries[#entries + 1] = entry
     end
