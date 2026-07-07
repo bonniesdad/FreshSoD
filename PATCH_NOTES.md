@@ -1,5 +1,11 @@
 # Patch Notes
 
+## 1.1.5 (2026-07-07)
+
+**FEATURES:**
+• Puddle guild added to guild found
+
+
 ## 1.1.4 (2026-06-25)
 
 **FEATURES (all guilds):**
