@@ -317,7 +317,14 @@ function FreshSoD_HandlePlayerDeathTax()
   end
 
   local copperCoins = GetMoney()
-  local tax = math.floor(copperCoins * 0.10)
+  local taxableCopper = copperCoins
+
+  -- Tax collectors (top 2 guild ranks) may be holding guild tax gold; do not tax that portion.
+  if FreshSoD_AmITopGuildRank and FreshSoD_AmITopGuildRank() then
+    taxableCopper = math.max(copperCoins - FreshSoD_GetDeathTaxCollectedCopper(), 0)
+  end
+
+  local tax = math.floor(taxableCopper * 0.10)
   local playerName = UnitName('player') or 'You'
 
   FreshSoD_AddDeathTaxOwedCopper(tax)

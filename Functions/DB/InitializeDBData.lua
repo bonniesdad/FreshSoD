@@ -12,6 +12,7 @@ function FreshSoD_InitializeDBData()
     levelBracketAcknowledged = {},
     deathTaxOwedCopperV2 = 0,
     deathTaxTotalAccumulatedCopperV2 = 0,
+    deathTaxCollectedCopper = 0,
   }
 
   local characterGUID = UnitGUID('player')

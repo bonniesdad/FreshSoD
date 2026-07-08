@@ -6,6 +6,10 @@ function FreshSoD_GetDeathTaxTotalAccumulatedCopper()
   return FreshSoD_GetDBValue('deathTaxTotalAccumulatedCopperV2') or 0
 end
 
+function FreshSoD_GetDeathTaxCollectedCopper()
+  return FreshSoD_GetDBValue('deathTaxCollectedCopper') or 0
+end
+
 function FreshSoD_AddDeathTaxOwedCopper(amount)
   amount = math.max(tonumber(amount) or 0, 0)
   local owed = FreshSoD_GetDeathTaxOwedCopper() + amount
@@ -15,6 +19,17 @@ function FreshSoD_AddDeathTaxOwedCopper(amount)
   return owed
 end
 
+function FreshSoD_AddDeathTaxCollectedCopper(amount)
+  amount = math.max(tonumber(amount) or 0, 0)
+  local collected = FreshSoD_GetDeathTaxCollectedCopper() + amount
+  FreshSoD_SaveDBData('deathTaxCollectedCopper', collected)
+  return collected
+end
+
 function FreshSoD_ClearDeathTaxOwedCopper()
   FreshSoD_SaveDBData('deathTaxOwedCopperV2', 0)
+end
+
+function FreshSoD_ClearDeathTaxCollectedCopper()
+  FreshSoD_SaveDBData('deathTaxCollectedCopper', 0)
 end
