@@ -9,7 +9,6 @@ function FreshSoD_InitializeDBData()
 
   local defaultSettings = {
     minimapButton = { hide = false },
-    levelBracketAcknowledged = {},
     deathTaxOwedCopperV2 = 0,
     deathTaxTotalAccumulatedCopperV2 = 0,
     deathTaxCollectedCopper = 0,
