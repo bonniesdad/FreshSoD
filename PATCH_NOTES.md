@@ -1,5 +1,11 @@
 # Patch Notes
 
+## 1.1.7 (2026-15-07)
+
+**FEATURES:**
+• Allow NPC mail
+
+
 ## 1.1.6 (2026-07-07)
 
 **FEATURES:**
