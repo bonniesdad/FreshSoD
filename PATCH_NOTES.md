@@ -4,6 +4,7 @@
 
 **FEATURES:**
 • Allow NPC mail
+• Allow RFC dungeon without warning
 
 
 ## 1.1.6 (2026-07-07)

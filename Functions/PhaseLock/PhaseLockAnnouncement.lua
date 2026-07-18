@@ -41,7 +41,6 @@ local PHASE_LOCKED_INSTANCE_MAP_IDS = {
 
 -- Locale-safe fallback if map ID differs on a client build.
 local PHASE_LOCKED_INSTANCE_NAMES = {
-  ["Ragefire Chasm"] = 5, -- testing
   ["Karazhan Crypts"] = 5,
   ["Ruins of Ahn'Qiraj"] = 5,
   ["Ahn'Qiraj Temple"] = 5,
