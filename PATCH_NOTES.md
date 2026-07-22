@@ -1,5 +1,11 @@
 # Patch Notes
 
+## 1.1.8 (2026-22-07)
+
+**FEATURES:**
+• Bump for blizzard update
+
+
 ## 1.1.7 (2026-15-07)
 
 **FEATURES:**

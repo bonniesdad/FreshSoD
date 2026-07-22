@@ -1,6 +1,6 @@
-## Interface: 11508
+## Interface: 11509
 ## Title: SoD Guild Found
-## Version: 1.1.7
+## Version: 1.1.8
 ## Author: BonniesDad
 ## Notes: Addon to ensure a fresh SoD playthrough for guild found. 
 ## Dependencies: BonniesUtilities
